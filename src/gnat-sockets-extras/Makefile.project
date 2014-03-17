@@ -1,0 +1,8 @@
+PROJECT=gnat_sockets_extras
+
+GENERATED_EXECUTABLES=bin/demo
+
+GENERATED_SOURCES=
+
+SCRIPTS=
+

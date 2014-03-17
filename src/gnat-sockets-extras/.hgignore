@@ -1,0 +1,30 @@
+syntax: glob
+
+# Temporary files from editors:
+*~
+.\#*
+\#*\#
+.*.swp
+
+# Output from tests:
+tests/build.status
+tests/run.status
+tests/*/*.errors
+tests/*/*.output
+
+# Generated test executables:
+
+# Test output to clean up:
+
+# Output from source text metric analysis:
+obj/*.ad[sb].metrix
+
+# Generated source files:
+
+# Generated object files:
+obj/*.ali
+obj/*.o
+
+# Generated executables:
+bin/demo
+

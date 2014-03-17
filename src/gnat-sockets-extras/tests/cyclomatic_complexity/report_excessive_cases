@@ -1,0 +1,95 @@
+#! /bin/zsh
+#-----------------------------------------------------------------------------
+#--  Set current working directory:
+
+if cd "$(dirname "$0")"; then
+   true
+else
+   echo "Could not make '$(dirname "$0")' the current working directory." 1>&2
+   exit 100
+fi
+
+#-----------------------------------------------------------------------------
+#--  Check for up-to-date metrics reports:
+
+for source in ../../src/**/*.ad[sb]; do
+   unit="$(basename ${source})"
+   report="../../obj/${unit}.metrix"
+
+   if [ ! -f "${report}" ]; then
+      echo "Could not find a metrics report for '${unit}'." 1>&2
+      exit 101
+   elif [ "${source}" -nt "${report}" ]; then
+      echo "Could not find an up-to-date metrics report for '${unit}'." 1>&2
+      exit 102
+   fi
+done
+
+#-----------------------------------------------------------------------------
+#--  Scan for excessive cyclomatic complexity:
+
+egrep ' body | cyclomatic complexity ' ../../obj/*.metrix \
+  | egrep -B1 ' cyclomatic complexity +: +(1[1-9]|[2-9][0-9]|[0-9]{3})' \
+  | egrep ' body ' \
+  | perl -lpe 's!^.*obj/!!;
+               s![.]metrix: *!\t!;
+               s! *[(].+ at lines +([0-9]+): +([0-9]+)[)]!\t$1\t$2!' \
+  > execessive_cases
+
+#-----------------------------------------------------------------------------
+#--  Make sure list of generated source files exists:
+
+if [ ! -r generated_source_files ]; then
+   touch generated_source_files
+fi
+
+#-----------------------------------------------------------------------------
+#--  Check excessive cases:
+
+local counter=0
+
+cut -f1 execessive_cases \
+  | LANG=C sort -u \
+  | diff <(LANG=C sort -u generated_source_files) - \
+  | grep '^> ' \
+  | cut -c3 \
+  | while read unit; do
+       source="$(find ../../src -name "${unit}")"
+
+       if [ -f "${source}" ]; then
+          grep "^${unit}" execessive_cases | read unit_again subprogram from_line to_line
+
+          if [ "${unit}" != "${unit_again}" ]; then
+             echo "'grep' mismatch on unit '${unit}'." 1>&2
+             exit 103
+          fi
+
+          if head -n ${to_line} "${source}" \
+               | tail -n +${from_line} \
+               | grep -- '--  Excessive cyclomatic complexity:' 1>/dev/null; then
+             true
+          else
+             let counter++
+             echo "'${unit}' has unexplained excessive cyclomatic complexity." 1>&2
+          fi
+       else
+          echo "'${unit}' not a part of this project." 1>&2
+       fi
+    done
+
+#-----------------------------------------------------------------------------
+#--  Clean up:
+
+if [ ! -s execessive_cases -o ${counter} = 0 ]; then
+   rm -f execessive_cases
+fi
+
+if [ ! -s generated_source_files ]; then
+   rm -f generated_source_files
+fi
+
+#-----------------------------------------------------------------------------
+
+exit ${counter}
+
+#-----------------------------------------------------------------------------
