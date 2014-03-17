@@ -1,0 +1,45 @@
+#! /bin/bash
+
+cd "$(dirname "$0")" || exit 100
+
+./echo_server &
+pid=$!
+
+( echo One
+  echo EOF ) \
+  | nc localhost 8042 \
+  > one.output
+
+( echo Two
+  echo Three
+  echo STOP ) \
+  | nc localhost 8042 \
+  > two+three.output
+
+sleep 0.5
+
+if [ -d /proc/${pid} ]; then
+   kill ${pid}
+   sleep 0.5
+
+   if [ -d /proc/${pid} ]; then
+      kill -9 ${pid}
+      exit 102
+   else
+      exit 101
+   fi
+fi
+
+errors=0
+
+for example in one two+three; do
+   if diff -q ${example}.reference ${example}.output; then
+      true
+   else
+      echo "${example} failed."
+      let errors++
+   fi
+done
+
+exit ${errors}
+
