@@ -18,6 +18,14 @@ Requirements
 Requirements for the library are kept as [issues](https://github.com/AdaHeads/Black/issues?labels=requirement) under the project on GitHub.
 
 
+Included tests
+--------------
+
+1. 'cyclomatic_complexity' - reports excessive cyclomatic complexities in the
+   project sources.
+2. 'unused_units' - warns about units which aren't compiled.
+
+
 Links
 -----
 

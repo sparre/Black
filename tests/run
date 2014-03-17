@@ -1,0 +1,107 @@
+#! /bin/bash
+###############################################################################
+#                                                                             #
+#                     Copyright (C) 2012-2013, AdaHeads K/S                   #
+#       Copyright (C) 2013-, Jacob Sparre Andersen Research & Innovation      #
+#                                                                             #
+#  This is free software;  you can redistribute it  and/or modify it          #
+#  under terms of the  GNU General Public License as published  by the        #
+#  Free Software  Foundation;  either version 3,  or (at your option) any     #
+#  later version.  This software is distributed in the hope  that it will     #
+#  be useful, but WITHOUT ANY WARRANTY;  without even the implied warranty    #
+#  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU        #
+#  General Public License for  more details.                                  #
+#  You should have  received  a copy of the GNU General  Public  License      #
+#  distributed  with  this  software;   see  file COPYING3.  If not, go       #
+#  to http://www.gnu.org/licenses for a complete copy of the license.         #
+#                                                                             #
+###############################################################################
+
+default_allowed_time_in_seconds=10
+
+cd "$(dirname "$0")" || exit -1
+
+failed_list=$(mktemp)
+succeeded_list=$(mktemp)
+
+number_of_runs=$(find ./ -mindepth 2 -type f -perm +100 | wc -l)
+run_number=0
+
+echo -n "Running tests...   "
+
+for file in $(find ./ -mindepth 2 -type f -perm +100 | sort); do
+   let run_number++
+
+   if [ ! -f ${file}.arguments ]; then
+      touch ${file}.arguments
+   fi
+
+   if [ -f ${file}.allowed_time_in_seconds ]; then
+      allowed_time_in_seconds=$(cat ${file}.allowed_time_in_seconds)
+   else
+      allowed_time_in_seconds=${default_allowed_time_in_seconds}
+   fi
+
+   echo ${run_number}/${number_of_runs}$'\tRunning '${file}' for at most '${allowed_time_in_seconds}' seconds...' 1>&2
+
+   tr '\n' '\0' < ${file}.arguments \
+     | xargs --null ./${file} 1>${file}.output \
+                              2>${file}.errors \
+                              &
+   pid=$!
+
+   (
+     sleep ${allowed_time_in_seconds}
+     if [ -d /proc/${pid} ]; then
+        echo ${run_number}/${number_of_runs}$'\tTerminating '${file}'...' 1>&2
+        kill ${pid} 2>/dev/null
+        sleep 1
+        if [ -d /proc/${pid} ]; then
+           echo ${run_number}/${number_of_runs}$'\tKilling '${file}'...' 1>&2
+           kill -9 ${pid} 2>/dev/null
+        fi
+     fi
+   ) &
+
+   wait ${pid}
+   result=$?
+
+   if [ ${result} -eq 0 ]; then
+      echo ${run_number}/${number_of_runs}$'\tRun succeeded.' 1>&2
+
+      echo "${file}"             >> ${succeeded_list}
+
+      rm -f ${file}.{output,errors}
+   elif [ ${result} -eq 123 ]; then
+      echo ${run_number}/${number_of_runs}$'\tRun was terminated by an exception.' 1>&2
+
+      echo "${file} (exception)" >>    ${failed_list}
+   elif [ ${result} -eq 137 ]; then
+      echo ${run_number}/${number_of_runs}$'\tRun was terminated by SIGKILL.' 1>&2
+
+      echo "${file} (SIGKILL)"   >>    ${failed_list}
+   elif [ ${result} -eq 143 ]; then
+      echo ${run_number}/${number_of_runs}$'\tRun was terminated by SIGTERM.' 1>&2
+
+      echo "${file} (SIGTERM)"   >>    ${failed_list}
+   else
+      echo ${run_number}/${number_of_runs}$'\tRun failed with exit code '${result}'.' 1>&2
+
+      echo "${file} (${result})" >>    ${failed_list}
+   fi
+done \
+  2>run.status
+
+total=$(cat ${succeeded_list} ${failed_list} | wc -l)
+failed=$(cat ${failed_list} | wc -l)
+
+if [ -s ${failed_list} ]; then
+   echo "${failed} out of ${total} tests failed:"
+   uniq < ${failed_list} | sed 's|^.|   tests|'
+else
+   echo "All ${total} tests succeeded."
+fi
+
+rm -f ${failed_list} ${succeeded_list}
+
+exit ${failed}
