@@ -14,8 +14,14 @@ begin
       One.Start;
       Put_Line ("One started.");
    end;
+   
+   raise Program_Error
+     with "The error in GNAT seems to have been fixed now.";
 exception
+   when E : Storage_Error =>
+      Put_Line ("Storage_Error with """ & Exception_Message (E) & """");
    when E : others =>
-      Put_Line ("Message: """ & Exception_Message (E));
+      Put_Line
+        (Exception_Name (E) & " with """ & Exception_Message (E) & """");
       raise;
 end Run;
