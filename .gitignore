@@ -18,6 +18,7 @@ tests/*/*.errors
 tests/*/*.output
 
 # Generated test executables:
+tests/task_interfaces_and_extended_return/run
 
 # Test output to clean up:
 
@@ -29,6 +30,8 @@ obj/*.ad[sb].metrix
 # Generated object files:
 obj/*.ali
 obj/*.o
+tests/*/*.ali
+tests/*/*.o
 
 # Generated executables:
 bin/demo
