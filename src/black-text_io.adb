@@ -38,6 +38,12 @@ package body Black.Text_IO is
            Item => Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
    end New_Line;
 
+   procedure New_Line (Target : in out Stream_Element_Vectors.Vector) is
+   begin
+      Put (Target => Target,
+           Item   => Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
+   end New_Line;
+
    procedure Put (File : in     POSIX.IO.File_Descriptor;
                   Item : in     String) is
       use type Ada.Streams.Stream_Element_Offset;
@@ -54,11 +60,28 @@ package body Black.Text_IO is
       end loop;
    end Put;
 
+   procedure Put (Target : in out Stream_Element_Vectors.Vector;
+                  Item   : in     String) is
+      Buffer : Ada.Streams.Stream_Element_Array (1 .. Item'Length);
+      for Buffer'Address use Item'Address;
+      pragma Assert (Buffer'Size = Item'Size);
+   begin
+      Target.Append (Buffer);
+   end Put;
+
    procedure Put_Line (File : in     POSIX.IO.File_Descriptor;
                        Item : in     String) is
    begin
       Put (File => File,
            Item => Item &
                    Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
+   end Put_Line;
+
+   procedure Put_Line (Target : in out Stream_Element_Vectors.Vector;
+                       Item   : in     String) is
+   begin
+      Put (Target => Target,
+           Item   => Item &
+                     Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
    end Put_Line;
 end Black.Text_IO;
