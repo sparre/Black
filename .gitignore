@@ -8,8 +8,8 @@ to_master
 .#*#
 .*.swp
 
-# Ignore Mercurial repository data:
-src/gnat-sockets-extras/.hg
+# Ignore Ahven sources:
+ahven/
 
 # Output from tests:
 tests/build.status

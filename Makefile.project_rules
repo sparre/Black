@@ -1,0 +1,5 @@
+ahven:
+	if [ -d ahven ]; then ( cd ahven && hg pull && hg update ); else ( rm -f ahven && hg clone https://bitbucket.org/tkoskine/ahven ); fi
+
+.PHONY: ahven
+
