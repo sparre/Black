@@ -1,11 +1,19 @@
 with
-  Ada.Characters.Latin_1;
+  Ada.Characters.Latin_1,
+  Ada.Streams;
 package body Black.Text_IO is
+   procedure New_Line (File : in     POSIX.IO.File_Descriptor) is
+   begin
+      Put (File => File,
+           Item => Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
+   end New_Line;
+
    procedure Put (File : in     POSIX.IO.File_Descriptor;
                   Item : in     String) is
-      Buffer : constant Ada.Streams.Stream_Element_Array (1 .. Item'Length);
+      use type Ada.Streams.Stream_Element_Offset;
+      Buffer : Ada.Streams.Stream_Element_Array (1 .. Item'Length);
       for Buffer'Address use Item'Address;
-      pragma Assert (Buffer'Element_Size = Item'Element_Size);
+      pragma Assert (Buffer'Size = Item'Size);
       Last : Ada.Streams.Stream_Element_Offset := Buffer'First;
    begin
       while Last in Buffer'Range loop
@@ -20,12 +28,7 @@ package body Black.Text_IO is
                        Item : in     String) is
    begin
       Put (File => File,
-           Item => Item & Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
+           Item => Item &
+                   Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
    end Put_Line;
-
-   procedure New_Line (File : in     POSIX.IO.File_Descriptor) is
-   begin
-      Put (File => File,
-           Item => Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
-   end New_Line;
 end Black.Text_IO;
