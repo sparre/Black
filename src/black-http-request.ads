@@ -7,8 +7,6 @@ with
 package Black.HTTP.Request is
    type Instance is limited private;
 
-   type Methods is (Put, Get, Delete, Post);
-
    function URL      (Request : in Instance) return String;
    function Resource (Request : in Instance) return String;
    function Method   (Request : in Instance) return Methods;
