@@ -3,10 +3,6 @@ with
 with
   Black.HTTP.Request,
   Black.HTTP.Server;
---  GNAT.Sockets.Compatibility;
-
---  pragma Unreferenced (GNAT.Sockets.Compatibility); --  Just to build it.
-
 procedure Demo is
    use Black;
 begin
