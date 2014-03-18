@@ -14,7 +14,7 @@ begin
       One.Start;
       Put_Line ("One started.");
    end;
-   
+
    raise Program_Error
      with "The error in GNAT seems to have been fixed now.";
 exception
