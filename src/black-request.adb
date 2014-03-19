@@ -1,5 +1,6 @@
 with
-  Ada.Characters.Handling;
+  Ada.Characters.Handling,
+  Ada.Strings.Fixed;
 with
   Black.Text_IO;
 
@@ -74,6 +75,48 @@ package body Black.Request is
    procedure Parse_Method_And_Resource
      (Request : in out Instance;
       Line    : in     Ada.Strings.Unbounded.Unbounded_String) is
+
+      function Parse_Parameters (Raw : in String)
+                                return Parameter_Vectors.Vector;
+
+      function Parse_Parameters (Raw : in String)
+                                return Parameter_Vectors.Vector is
+         use Ada.Strings.Fixed;
+         From : Positive := Raw'First;
+         Next : Positive;
+      begin
+         return Result : Parameter_Vectors.Vector do
+            loop
+               exit when From > Raw'Last;
+
+               Next := Index (Raw (From .. Raw'Last) & "&", "&");
+
+               declare
+                  use Ada.Strings.Unbounded;
+                  Current : constant String := Raw (From .. Next - 1);
+                  Equals  : constant Natural := Index (Current, "=");
+               begin
+                  if Equals in Current'Range then
+                     Result.Append
+                       ((Key        => To_Unbounded_String
+                                         (Current
+                                            (Current'First .. Equals - 1)),
+                         With_Value => True,
+                         Value      => To_Unbounded_String
+                                         (Current
+                                            (Equals + 1 .. Current'Last))));
+                  else
+                     Result.Append ((Key        => To_Unbounded_String
+                                                     (Current),
+                                     With_Value => False));
+                  end if;
+               end;
+
+               From := Next + 1;
+            end loop;
+         end return;
+      end Parse_Parameters;
+
       use Ada.Strings.Unbounded;
       First_Space  : constant Natural := Index (Line, " ");
       Second_Space : constant Natural := Index (Line, " ", First_Space + 1);
@@ -92,16 +135,34 @@ package body Black.Request is
                  with """" & Method & """ is not a recognised HTTP method.";
          end Parse_Method;
 
-         Parse_Resource :
+         Parse_Resource_And_Parameters :
          begin
             if Second_Space - First_Space > 1 then
-               Request.Resource :=
-                 Unbounded_Slice (Line, First_Space + 1, Second_Space - 1);
+               declare
+                  Parameter_Marker : constant Natural :=
+                    Index (Line, "?", First_Space + 1);
+               begin
+                  if Parameter_Marker in 1 .. Second_Space - 1 then
+                     Request.Resource :=
+                       Unbounded_Slice (Source => Line,
+                                        Low    => First_Space + 1,
+                                        High   => Parameter_Marker - 1);
+                     Request.Parameters :=
+                       Parse_Parameters (Slice (Source => Line,
+                                                Low    => Parameter_Marker + 1,
+                                                High   => Second_Space - 1));
+                  else
+                     Request.Resource :=
+                       Unbounded_Slice (Source => Line,
+                                        Low    => First_Space + 1,
+                                        High   => Second_Space - 1);
+                  end if;
+               end;
             else
                raise Protocol_Error
                  with "Empty resource identifier.";
             end if;
-         end Parse_Resource;
+         end Parse_Resource_And_Parameters;
 
          Parse_Protocol_Version :
          begin
