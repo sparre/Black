@@ -19,7 +19,7 @@ clean:
 	gnatclean -P $(PROJECT) || true
 	find . -name "*~" -type f -print0 | xargs -0 -r /bin/rm
 	rm -f **/*.o **/*.ali
-	if [ ! -z "$(GENERATED_SOURCES)" ]; then rm -f $(GENERATED_SOURCES); fi
+	if [ ! -z "$(GENERATED_SOURCES)" ]; then rm -rf $(GENERATED_SOURCES); fi
 	rmdir bin || true
 	rmdir obj || true
 
