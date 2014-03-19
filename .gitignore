@@ -1,5 +1,5 @@
 # Jacob's script for merging and pushing to master:
-to_master
+/to_master
 
 # Temporary and backup files from editors
 \#*#
@@ -9,30 +9,31 @@ to_master
 .*.swp
 
 # Ignore Ahven sources:
-ahven/
+/ahven/
 
 # Output from tests:
-tests/build.status
-tests/run.status
-tests/*/*.errors
-tests/*/*.output
+/tests/build.status
+/tests/run.status
+/tests/*/*.errors
+/tests/*/*.output
+/tests/results/
 
 # Generated test executables:
-tests/task_interfaces_and_extended_return/run
+/tests/task_interfaces_and_extended_return/run
 
 # Test output to clean up:
 
 # Output from source text metric analysis:
-obj/*.ad[sb].metrix
+/obj/*.ad[sb].metrix
 
 # Generated source files:
 
 # Generated object files:
-obj/*.ali
-obj/*.o
-tests/*/*.ali
-tests/*/*.o
+/obj/*.ali
+/obj/*.o
+/tests/*/*.ali
+/tests/*/*.o
 
 # Generated executables:
-bin/demo
+/bin/demo
 
