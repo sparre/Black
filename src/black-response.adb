@@ -39,7 +39,9 @@ package body Black.Response is
       use Ada.Streams;
    begin
       if Item.Complete then
-         Stream_Element_Vectors.Vector'Write (Stream, Item.Data);
+         for Index in Item.Data.First_Index .. Item.Data.Last_Index loop
+            Stream.Write (Item.Data.Element (Index));
+         end loop;
       else
          raise Constraint_Error
            with "Response object is not ready to be streamed.";

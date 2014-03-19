@@ -10,7 +10,7 @@ package body Black.Text_IO_Tests is
    procedure Save (File_Name : in     String;
                    Data      : in     Stream_Element_Vectors.Vector);
 
-   function Load (File_Name : in     String) return String;
+   function Load (File_Name : in String) return String;
 
    overriding
    procedure Initialize (T : in out Test) is
@@ -53,16 +53,17 @@ package body Black.Text_IO_Tests is
    procedure Put_Test is
       use Stream_Element_Vectors, Text_IO;
       Test_Data : constant String := "Hello World!";
+      Test_File : constant String := "ahven/test_data_1";
       Buffer : Vector;
    begin
       Put (Target => Buffer, Item => Test_Data);
 
-      Save (File_Name => "test_data_1",
+      Save (File_Name => Test_File,
             Data      => Buffer);
 
       declare
          use Ahven;
-         Saved_Data : constant String := Load (File_Name => "test_data_1");
+         Saved_Data : constant String := Load (File_Name => Test_File);
       begin
          Assert (Test_Data = Saved_Data,
                  "Wrote """ & Test_Data & """.  Got """ & Saved_Data & """.");
@@ -77,8 +78,9 @@ package body Black.Text_IO_Tests is
    begin
       Create (File => Target,
               Name => File_Name);
-      Vector'Output (Stream (Target),
-                     Data);
+      for Index in Data.First_Index .. Data.Last_Index loop
+         Stream (Target).Write (Data.Element (Index));
+      end loop;
       Close (File => Target);
    end Save;
 end Black.Text_IO_Tests;
