@@ -1,4 +1,5 @@
 with
+  Ada.Characters.Latin_1,
   Ada.Streams,
   Ada.Streams.Stream_IO,
   Ada.Strings.Unbounded;
@@ -40,14 +41,53 @@ package body Black.Text_IO_Tests is
          return To_String (Buffer);
    end Load;
 
+   New_Line : constant String := Ada.Characters.Latin_1.CR &
+                                 Ada.Characters.Latin_1.LF;
+
    procedure New_Line_Test is
+      use Stream_Element_Vectors;
+      Test_Data : constant String := "Hello World!";
+      Test_File : constant String := "ahven/test_data_3";
+      Buffer : Vector;
    begin
-      raise Program_Error with "New_Line test not implemented.";
+      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+      Text_IO.New_Line (Target => Buffer);
+      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+
+      Save (File_Name => Test_File,
+            Data      => Buffer);
+
+      declare
+         use Ahven;
+         Expected   : constant String := Test_Data & New_Line &
+                                         New_Line &
+                                         Test_Data & New_Line;
+         Saved_Data : constant String := Load (File_Name => Test_File);
+      begin
+         Assert (Expected = Saved_Data,
+                 "Wrote """ & Expected & """.  Got """ & Saved_Data & """.");
+      end;
    end New_Line_Test;
 
    procedure Put_Line_Test is
+      use Stream_Element_Vectors;
+      Test_Data : constant String := "Hello World!";
+      Test_File : constant String := "ahven/test_data_2";
+      Buffer : Vector;
    begin
-      raise Program_Error with "Put_Line test not implemented.";
+      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+
+      Save (File_Name => Test_File,
+            Data      => Buffer);
+
+      declare
+         use Ahven;
+         Expected   : constant String := Test_Data & New_Line;
+         Saved_Data : constant String := Load (File_Name => Test_File);
+      begin
+         Assert (Expected = Saved_Data,
+                 "Wrote """ & Expected & """.  Got """ & Saved_Data & """.");
+      end;
    end Put_Line_Test;
 
    procedure Put_Test is
