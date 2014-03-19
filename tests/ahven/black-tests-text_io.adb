@@ -13,6 +13,49 @@ package body Black.Tests.Text_IO is
 
    function Load (File_Name : in String) return String;
 
+   procedure Get_Line_Test is
+      use Ada.Strings.Unbounded;
+      Test_Data : constant array (1 .. 3) of Unbounded_String :=
+                    (To_Unbounded_String ("Hello World!"),
+                     To_Unbounded_String (""),
+                     To_Unbounded_String ("I'm Marvin."));
+      Test_File : constant String := "ahven/test_data_4";
+   begin
+      Save_Test_Data :
+      declare
+         use Black.Stream_Element_Vectors;
+         Buffer : Vector;
+      begin
+         for I in Test_Data'Range loop
+            Black.Text_IO.Put_Line (Target => Buffer,
+                                    Item   => To_String (Test_Data (I)));
+         end loop;
+
+         Save (File_Name => Test_File,
+               Data      => Buffer);
+      end Save_Test_Data;
+
+      Load_And_Check_Test_Data :
+      declare
+         use Ada.Streams.Stream_IO;
+         use Ahven;
+         Source : File_Type;
+         Got    : Unbounded_String;
+      begin
+         Open (File => Source,
+               Name => Test_File,
+               Mode => In_File);
+         for I in Test_Data'Range loop
+            Got := Black.Text_IO.Get_Line (Stream (Source));
+
+            Assert (Got = Test_Data (I),
+                    "Line" & Positive'Image (I) & ": Wrote """ &
+                    To_String (Test_Data (I)) & """.  Got """ &
+                    To_String (Got) & """.");
+         end loop;
+      end Load_And_Check_Test_Data;
+   end Get_Line_Test;
+
    overriding
    procedure Initialize (T : in out Test) is
       use Ahven.Framework;
@@ -22,6 +65,7 @@ package body Black.Tests.Text_IO is
       Add_Test_Routine (T, Put_Test'Access,      "Put test");
       Add_Test_Routine (T, Put_Line_Test'Access, "Put_Line test");
       Add_Test_Routine (T, New_Line_Test'Access, "New_Line test");
+      Add_Test_Routine (T, Get_Line_Test'Access, "Get_Line test");
    end Initialize;
 
    function Load (File_Name : in     String) return String is

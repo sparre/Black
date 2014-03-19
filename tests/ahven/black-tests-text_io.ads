@@ -10,4 +10,5 @@ private
    procedure Put_Test;
    procedure Put_Line_Test;
    procedure New_Line_Test;
+   procedure Get_Line_Test;
 end Black.Tests.Text_IO;
