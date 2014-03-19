@@ -1,5 +1,10 @@
+ifndef OS_VERSION
+   $(error Ahven needs you to set OS_VERSION.)
+endif
+
 ahven:
-	if [ -d ahven ]; then ( cd ahven && hg pull && hg update ); else ( rm -f ahven && hg clone https://bitbucket.org/tkoskine/ahven ); fi
+	if [ -d ahven ]; then ( cd ahven && hg pull && hg update && hg revert --all ); else ( rm -f ahven && hg clone https://bitbucket.org/tkoskine/ahven ); fi
+	mkdir -p tests/results
 
 .PHONY: ahven
 
