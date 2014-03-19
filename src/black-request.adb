@@ -50,24 +50,24 @@ package body Black.Request is
       return R : Instance do
          R.Parse_Method_And_Resource (Text_IO.Get_Line (Stream));
 
-	 Previous_Line := Text_IO.Get_Line (Stream);
-	 
-	 if Length (Previous_Line) > 0 then
-	    loop
-	       Current_Line := Text_IO.Get_Line (Stream);
+         Previous_Line := Text_IO.Get_Line (Stream);
 
-	       if Length (Current_Line) = 0 then
-		  R.Parse (Previous_Line);
-		  exit;
-	       elsif Element (Current_Line, 1) = ' ' then
-		  Current_Line := Previous_Line & Current_Line;
-	       else
-		  R.Parse (Previous_Line);
-	       end if;
+         if Length (Previous_Line) > 0 then
+            loop
+               Current_Line := Text_IO.Get_Line (Stream);
 
-	       Previous_Line := Current_Line;
-	    end loop;
-	 end if;
+               if Length (Current_Line) = 0 then
+                  R.Parse (Previous_Line);
+                  exit;
+               elsif Element (Current_Line, 1) = ' ' then
+                  Current_Line := Previous_Line & Current_Line;
+               else
+                  R.Parse (Previous_Line);
+               end if;
+
+               Previous_Line := Current_Line;
+            end loop;
+         end if;
       end return;
    end Parse_HTTP;
 
