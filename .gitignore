@@ -19,9 +19,11 @@
 /tests/results/
 
 # Generated test executables:
+/tests/ahven/runner
 /tests/task_interfaces_and_extended_return/run
 
 # Test output to clean up:
+/tests/ahven/test_data_1
 
 # Output from source text metric analysis:
 /obj/*.ad[sb].metrix

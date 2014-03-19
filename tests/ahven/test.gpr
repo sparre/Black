@@ -1,0 +1,14 @@
+--  O mighty Emacs, please use -*- Ada -*- mode in this lowly file.
+
+with "../../ada_2005";
+with "../../ahven/gnat/ahven_lib";
+
+project Test is
+   for Source_Dirs use (".",
+       		        "../../src/");
+
+   for Main use ("runner");
+
+   package Builder  renames Ada_2005.Builder;
+   package Compiler renames Ada_2005.Compiler;
+end Test;
