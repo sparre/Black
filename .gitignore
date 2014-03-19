@@ -19,7 +19,7 @@
 /tests/results/
 
 # Generated test executables:
-/tests/ahven/runner
+/tests/ahven/black-tests-run
 /tests/task_interfaces_and_extended_return/run
 
 # Test output to clean up:

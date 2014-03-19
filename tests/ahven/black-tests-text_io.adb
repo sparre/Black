@@ -7,7 +7,7 @@ with
   Black.Stream_Element_Vectors,
   Black.Text_IO;
 
-package body Black.Text_IO_Tests is
+package body Black.Tests.Text_IO is
    procedure Save (File_Name : in     String;
                    Data      : in     Stream_Element_Vectors.Vector);
 
@@ -50,9 +50,9 @@ package body Black.Text_IO_Tests is
       Test_File : constant String := "ahven/test_data_3";
       Buffer : Vector;
    begin
-      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
-      Text_IO.New_Line (Target => Buffer);
-      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+      Black.Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+      Black.Text_IO.New_Line (Target => Buffer);
+      Black.Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
 
       Save (File_Name => Test_File,
             Data      => Buffer);
@@ -75,7 +75,7 @@ package body Black.Text_IO_Tests is
       Test_File : constant String := "ahven/test_data_2";
       Buffer : Vector;
    begin
-      Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
+      Black.Text_IO.Put_Line (Target => Buffer, Item => Test_Data);
 
       Save (File_Name => Test_File,
             Data      => Buffer);
@@ -91,12 +91,12 @@ package body Black.Text_IO_Tests is
    end Put_Line_Test;
 
    procedure Put_Test is
-      use Stream_Element_Vectors, Text_IO;
+      use Stream_Element_Vectors;
       Test_Data : constant String := "Hello World!";
       Test_File : constant String := "ahven/test_data_1";
       Buffer : Vector;
    begin
-      Put (Target => Buffer, Item => Test_Data);
+      Black.Text_IO.Put (Target => Buffer, Item => Test_Data);
 
       Save (File_Name => Test_File,
             Data      => Buffer);
@@ -123,4 +123,4 @@ package body Black.Text_IO_Tests is
       end loop;
       Close (File => Target);
    end Save;
-end Black.Text_IO_Tests;
+end Black.Tests.Text_IO;
