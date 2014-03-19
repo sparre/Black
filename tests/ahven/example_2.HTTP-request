@@ -1,0 +1,10 @@
+GET /some/resource/ HTTP/1.1
+Host: adaheads.sparre-andersen.dk:8042
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.123 Safari/537.36
+DNT: 1
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: en-US,en;q=0.8,da;q=0.6
+

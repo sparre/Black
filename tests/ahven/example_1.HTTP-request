@@ -1,0 +1,7 @@
+GET /some/resource HTTP/1.1
+Host: localhost:8042
+Accept: text/html, text/plain, text/css, text/sgml, */*;q=0.01
+Accept-Encoding: gzip, compress, bzip2
+Accept-Language: en
+User-Agent: Any Browser, HTML 4.01 (actually Mozilla)
+
