@@ -29,6 +29,8 @@
 /obj/*.ad[sb].metrix
 
 # Generated source files:
+/src/url_utilities.ad[sb]
+/src/hex_utilities.ad[sb]
 
 # Generated object files:
 /obj/*.ali

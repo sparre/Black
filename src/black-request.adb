@@ -2,6 +2,8 @@ with
   Ada.Characters.Handling,
   Ada.Strings.Fixed;
 with
+  URL_Utilities;
+with
   Black.Text_IO;
 
 package body Black.Request is
@@ -99,15 +101,18 @@ package body Black.Request is
                   if Equals in Current'Range then
                      Result.Append
                        ((Key        => To_Unbounded_String
-                                         (Current
-                                            (Current'First .. Equals - 1)),
+                                         (URL_Utilities.Decode
+                                           (Current
+                                              (Current'First .. Equals - 1))),
                          With_Value => True,
                          Value      => To_Unbounded_String
-                                         (Current
-                                            (Equals + 1 .. Current'Last))));
+                                         (URL_Utilities.Decode
+                                           (Current
+                                              (Equals + 1 .. Current'Last)))));
                   else
                      Result.Append ((Key        => To_Unbounded_String
-                                                     (Current),
+                                                     (URL_Utilities.Decode
+                                                        (Current)),
                                      With_Value => False));
                   end if;
                end;
@@ -144,18 +149,22 @@ package body Black.Request is
                begin
                   if Parameter_Marker in 1 .. Second_Space - 1 then
                      Request.Resource :=
-                       Unbounded_Slice (Source => Line,
-                                        Low    => First_Space + 1,
-                                        High   => Parameter_Marker - 1);
+                       To_Unbounded_String
+                         (URL_Utilities.Decode
+                            (Slice (Source => Line,
+                                    Low    => First_Space + 1,
+                                    High   => Parameter_Marker - 1)));
                      Request.Parameters :=
                        Parse_Parameters (Slice (Source => Line,
                                                 Low    => Parameter_Marker + 1,
                                                 High   => Second_Space - 1));
                   else
                      Request.Resource :=
-                       Unbounded_Slice (Source => Line,
-                                        Low    => First_Space + 1,
-                                        High   => Second_Space - 1);
+                       To_Unbounded_String
+                         (URL_Utilities.Decode
+                            (Slice (Source => Line,
+                                    Low    => First_Space + 1,
+                                    High   => Second_Space - 1)));
                   end if;
                end;
             else

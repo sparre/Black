@@ -2,7 +2,9 @@ PROJECT=black
 
 GENERATED_EXECUTABLES=
 
-GENERATED_SOURCES=ahven
+GENERATED_SOURCES=ahven \
+                  src/url_utilities.ads src/url_utilities.adb \
+                  src/hex_utilities.ads src/hex_utilities.adb
 
 SCRIPTS=
 
