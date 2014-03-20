@@ -9,14 +9,14 @@ ahven:
 .PHONY: ahven
 
 src/url_utilities.ads:
-	ln -s "$$(locate /url_utilities.ads | egrep ^$${HOME}.+'/url_utilities[.]ads$$' | head -n1)" src/url_utilities.ads
+	ln -fs "$$(find ~/ -type f -name url_utilities.ads | egrep "^$${HOME}" | head -n1)" src/
 
 src/url_utilities.adb:
-	ln -s "$$(locate /url_utilities.adb | egrep ^$${HOME}.+'/url_utilities[.]adb$$' | head -n1)" src/url_utilities.adb
+	ln -fs "$$(find ~/ -type f -name url_utilities.adb | egrep "^$${HOME}" | head -n1)" src/
 
 src/hex_utilities.ads:
-	ln -s "$$(locate /hex_utilities.ads | egrep ^$${HOME}.+'/hex_utilities[.]ads$$' | head -n1)" src/hex_utilities.ads
+	ln -fs "$$(find ~/ -type f -name hex_utilities.ads | egrep "^$${HOME}" | head -n1)" src/
 
 src/hex_utilities.adb:
-	ln -s "$$(locate /hex_utilities.adb | egrep ^$${HOME}.+'/hex_utilities[.]adb$$' | head -n1)" src/hex_utilities.adb
+	ln -fs "$$(find ~/ -type f -name hex_utilities.adb | egrep "^$${HOME}" | head -n1)" src/
 
