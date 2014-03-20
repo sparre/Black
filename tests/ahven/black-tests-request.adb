@@ -33,7 +33,8 @@ package body Black.Tests.Request is
          Ahven.Assert
            (Condition => Resource_Requested = Got.Resource,
             Message   => "Parser found " & Source_File_Name & " to ask for " &
-                         Got.Resource & ".");
+                         Got.Resource & " (expected " & Resource_Requested &
+                         ").");
       end;
 
       Close (File => Source);
@@ -61,6 +62,14 @@ package body Black.Tests.Request is
       new Parser_Test (Source_File_Name   => "example_3.HTTP-request",
                        Method_Used        => HTTP.Get,
                        Resource_Requested => "/some/resource/");
+   procedure Example_4 is
+      new Parser_Test (Source_File_Name   => "example_4.HTTP-request",
+                       Method_Used        => HTTP.Get,
+                       Resource_Requested => "/");
+   procedure Example_5 is
+      new Parser_Test (Source_File_Name   => "example_5.HTTP-request",
+                       Method_Used        => HTTP.Get,
+                       Resource_Requested => "/blåbærgrød");
 
    pragma Style_Checks (Off);
    overriding
@@ -72,5 +81,7 @@ package body Black.Tests.Request is
       Add_Test_Routine (T, Example_1'Access, "Request parser (example 1)");
       Add_Test_Routine (T, Example_2'Access, "Request parser (example 2)");
       Add_Test_Routine (T, Example_3'Access, "Request parser (example 3)");
+      Add_Test_Routine (T, Example_4'Access, "Request parser (example 4)");
+      Add_Test_Routine (T, Example_5'Access, "Request parser (example 5)");
    end Initialize;
 end Black.Tests.Request;
