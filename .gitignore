@@ -36,5 +36,8 @@
 /tests/*/*.ali
 /tests/*/*.o
 
+# Configuration file:
+.config
+
 # Generated executables:
 
