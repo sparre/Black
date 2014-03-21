@@ -5,7 +5,7 @@ package body Black.Response is
    function Not_Found (Resource : in String) return Class is
       use Text_IO;
       Message : constant String := "The requested resource, '" & Resource &
-	                           "' was not found on the server.";
+                                   "' was not found on the server.";
    begin
       return R : Instance do
          Put_Line (R.Data, "HTTP/1.1 404 Not Found");
