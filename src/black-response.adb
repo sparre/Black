@@ -2,13 +2,18 @@ with
   Black.Text_IO;
 
 package body Black.Response is
-   function Not_Found return Class is
+   function Not_Found (Resource : in String) return Class is
       use Text_IO;
+      Message : constant String := "The requested resource, '" & Resource &
+	                           "' was not found on the server.";
    begin
       return R : Instance do
          Put_Line (R.Data, "HTTP/1.1 404 Not Found");
          Put_Line (R.Data, "Content-Length: 0");
+         Put_Line (R.Data, "Content-Type: text/plain; charset=iso-8859-1");
+         Put_Line (R.Data, "Content-Length:" & Natural'Image (Message'Length));
          New_Line (R.Data);
+         Put      (R.Data, Message);
 
          R.Complete := True;
       end return;
