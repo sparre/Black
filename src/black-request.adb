@@ -16,6 +16,16 @@ package body Black.Request is
       end if;
    end Method;
 
+   function Parameters (Request : in Instance)
+                       return Parameter.Vectors.Vector is
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      else
+         return Request.Parameters;
+      end if;
+   end Parameters;
+
    procedure Parse (Request : in out Instance;
                     Line    : in     Ada.Strings.Unbounded.Unbounded_String) is
       function Key return String;
@@ -79,15 +89,15 @@ package body Black.Request is
       Line    : in     Ada.Strings.Unbounded.Unbounded_String) is
 
       function Parse_Parameters (Raw : in String)
-                                return Parameter_Vectors.Vector;
+                                return Parameter.Vectors.Vector;
 
       function Parse_Parameters (Raw : in String)
-                                return Parameter_Vectors.Vector is
+                                return Parameter.Vectors.Vector is
          use Ada.Strings.Fixed;
          From : Positive := Raw'First;
          Next : Positive;
       begin
-         return Result : Parameter_Vectors.Vector do
+         return Result : Parameter.Vectors.Vector do
             loop
                exit when From > Raw'Last;
 
