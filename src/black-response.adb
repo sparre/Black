@@ -1,4 +1,8 @@
 with
+  System.Storage_Elements;
+with
+  GNAT.SHA1;
+with
   Black.Text_IO;
 
 package body Black.Response is
@@ -84,7 +88,98 @@ package body Black.Response is
       end return;
    end Redirect;
 
-   function Switch_To_Websocket (Accept_Key : in String) return Class is
+   function Switch_To_Websocket (Key : in String) return Class is
+      function Accept_Key return String;
+      function To_Storage_Elements
+                 (Hex : in String)
+                 return System.Storage_Elements.Storage_Array;
+      function Base64 (Octets : in System.Storage_Elements.Storage_Array)
+                      return String;
+
+      function Accept_Key return String is
+         use GNAT.SHA1;
+         Hash : Context := Initial_Context;
+      begin
+         Update (Hash, Key);
+         Update (Hash, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+         return Base64 (To_Storage_Elements (Digest (Hash)));
+      end Accept_Key;
+
+      function Base64 (Octets : in System.Storage_Elements.Storage_Array)
+                      return String is
+         use System.Storage_Elements;
+         subtype Sextet is Storage_Element range 0 .. 2 ** 6 - 1;
+         Alphabet : constant array (Sextet) of Character :=
+                      "ABCDEFGHIJKLMNOPQRSTUVWXYZ" &
+                      "abcdefghijklmnopqrstuvwxyz" &
+                      "0123456789+/";
+         O_Pos  : Storage_Offset := Octets'First;
+         Result : String (1 .. (Octets'Length + 2) / 3 * 4) := (others => '_');
+         R_Pos  : Positive := Result'First;
+      begin
+         while O_Pos in Octets'Range loop
+            declare
+               First      : Storage_Element renames Octets (O_Pos);
+               Second     : Storage_Element renames Octets (O_Pos + 1);
+               Third      : Storage_Element renames Octets (O_Pos + 2);
+               A, B, C, D : Sextet;
+            begin
+               --  1st byte:
+               A := (First and 2#1111_1100#) / 2 ** 2;
+               B := (First and 2#0000_0011#) * 2 ** 4;
+
+               if O_Pos = Octets'Last then
+                  Result (R_Pos .. R_Pos + 3) :=
+                    Alphabet (A) & Alphabet (B) & "==";
+                  return Result;
+               end if;
+
+               --  2nd byte:
+               B := B or (Second and 2#1111_0000#) / 2 ** 4;
+               C :=      (Second and 2#0000_1111#) * 2 ** 2;
+
+               if O_Pos + 1 = Octets'Last then
+                  Result (R_Pos .. R_Pos + 3) :=
+                    Alphabet (A) & Alphabet (B) & Alphabet (C) & "=";
+                  return Result;
+               end if;
+
+               --  3rd byte:
+               C := C or (Third and 2#1100_0000#) / 2 ** 6;
+               D :=      (Third and 2#0011_1111#);
+
+               Result (R_Pos .. R_Pos + 3) :=
+                 Alphabet (A) & Alphabet (B) & Alphabet (C) & Alphabet (D);
+
+               O_Pos := O_Pos + 3;
+               R_Pos := R_Pos + 4;
+            end;
+         end loop;
+
+         return Result;
+      end Base64;
+
+      function To_Storage_Elements
+                 (Hex : in String)
+                 return System.Storage_Elements.Storage_Array is
+         use System.Storage_Elements;
+      begin
+         pragma Assert (Hex'Length mod 2 = 0, "We only process octets.");
+
+         return Octets : Storage_Array (0 .. Hex'Length / 2 - 1) do
+            for Index in Octets'Range loop
+               declare
+                  Hex_Offset : constant Positive :=
+                                 Hex'First + Positive (2 * Index);
+               begin
+                  Octets (Index) :=
+                    Storage_Element'Value
+                      ("16#" & Hex (Hex_Offset .. Hex_Offset + 1) & "#");
+               end;
+            end loop;
+         end return;
+      end To_Storage_Elements;
+
       use Text_IO;
    begin
       return R : Instance do

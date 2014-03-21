@@ -21,7 +21,7 @@ package Black.Response is
 
    function Not_Found (Resource : in String) return Class;
 
-   function Switch_To_Websocket (Accept_Key : in String) return Class;
+   function Switch_To_Websocket (Key : in String) return Class;
 private
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
