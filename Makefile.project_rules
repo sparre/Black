@@ -1,5 +1,5 @@
 ifndef OS_VERSION
-   $(error Ahven needs you to set OS_VERSION.)
+   $(error Ahven needs you to set OS_VERSION to either "unix" or "windows".)
 endif
 
 ahven:
