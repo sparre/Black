@@ -18,6 +18,8 @@ package Black.Response is
                return Class;
    function OK (Data : in String)
                return Class;
+
+   function Not_Found return Class;
 private
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;

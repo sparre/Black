@@ -2,6 +2,18 @@ with
   Black.Text_IO;
 
 package body Black.Response is
+   function Not_Found return Class is
+      use Text_IO;
+   begin
+      return R : Instance do
+         Put_Line (R.Data, "HTTP/1.1 404 Not Found");
+         Put_Line (R.Data, "Content-Length: 0");
+         New_Line (R.Data);
+
+         R.Complete := True;
+      end return;
+   end Not_Found;
+
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
                return Class is
