@@ -5,6 +5,8 @@ A simple HTTP and Websocket library written in Ada with minimal external depende
 
 We constrain ourselves to use only Ada 2005 (as Debian/stable doesn't have a good Ada 2012 compiler yet).
 
+You can find examples (well, right now only one) for Black in the examples repository [5].
+
 
 Dependencies
 ------------
@@ -55,4 +57,6 @@ Sparre Andersen [4].
    https://github.com/AdaHeads
 4. Jacob Sparre Andersen's repositories on Bitbucket:
    http://repositories.jacob-sparre.dk/
+5. Examples for Black:
+   https://github.com/AdaHeads/Black-examples
 
