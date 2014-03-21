@@ -8,9 +8,6 @@
 .#*#
 .*.swp
 
-# Ignore Ahven sources:
-/ahven/
-
 # Output from tests:
 /tests/build.status
 /tests/run.status
@@ -28,7 +25,8 @@
 # Output from source text metric analysis:
 /obj/*.ad[sb].metrix
 
-# Generated source files:
+# Generated and downloaded source files:
+/ahven/
 /src/url_utilities.ad[sb]
 /src/hex_utilities.ad[sb]
 
@@ -39,5 +37,4 @@
 /tests/*/*.o
 
 # Generated executables:
-/bin/demo
 
