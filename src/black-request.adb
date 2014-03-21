@@ -49,7 +49,7 @@ package body Black.Request is
          raise Protocol_Error
            with "Can not split """ & To_String (Line) & """ in key and value.";
       else
-         if Key = "Upgrade" and Value = "websocket" then
+         if Key = "UPGRADE" and Value = "websocket" then
             Request.Websocket := True;
          elsif Key = "Sec-Websocket-Key" then
             Request.Websocket_Key := To_Unbounded_String (Value);

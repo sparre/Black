@@ -14,6 +14,7 @@ package body Black.Tests.Request is
       Method_Used        : Black.HTTP.Methods;
       Resource_Requested : String;
       Parameters_Passed  : Parameter.Vectors.Vector;
+      Want_Websocket     : Boolean := False;
    procedure Parser_Test;
 
    function Image (Item : in Parameter.Instance) return String;
@@ -81,6 +82,18 @@ package body Black.Tests.Request is
             Message   => "Parser found " & Source_File_Name & " to ask for " &
                          Image (Got.Parameters) & " (expected " &
                          Image (Parameters_Passed) & ").");
+
+         if Want_Websocket then
+            Ahven.Assert
+              (Condition => Want_Websocket = Got.Want_Websocket,
+               Message   => "Parser found " & Source_File_Name &
+                            " not to ask for a websocket.");
+         else
+            Ahven.Assert
+              (Condition => Want_Websocket = Got.Want_Websocket,
+               Message   => "Parser found " & Source_File_Name &
+                            " to ask for a websocket.");
+         end if;
       end;
 
       Close (File => Source);
@@ -143,6 +156,12 @@ package body Black.Tests.Request is
                        Method_Used        => HTTP.Get,
                        Resource_Requested => "/blåbærgrød",
                        Parameters_Passed  => Example_5_Parameters);
+   procedure Example_6 is
+      new Parser_Test (Source_File_Name   => "example_6.HTTP-request",
+                       Method_Used        => HTTP.Get,
+                       Resource_Requested => "/chat",
+                       Parameters_Passed  => Parameter.Vectors.Empty_Vector,
+                       Want_Websocket     => True);
 
    pragma Style_Checks (Off);
    overriding
@@ -151,10 +170,11 @@ package body Black.Tests.Request is
    begin
       T.Set_Name ("HTTP Requests");
 
-      Add_Test_Routine (T, Example_1'Access, "Request parser (example 1)");
-      Add_Test_Routine (T, Example_2'Access, "Request parser (example 2)");
-      Add_Test_Routine (T, Example_3'Access, "Request parser (example 3)");
-      Add_Test_Routine (T, Example_4'Access, "Request parser (example 4)");
-      Add_Test_Routine (T, Example_5'Access, "Request parser (example 5)");
+      Add_Test_Routine (T, Example_1'Access, "Request parser (example 1 - get)");
+      Add_Test_Routine (T, Example_2'Access, "Request parser (example 2 - get)");
+      Add_Test_Routine (T, Example_3'Access, "Request parser (example 3 - get)");
+      Add_Test_Routine (T, Example_4'Access, "Request parser (example 4 - get)");
+      Add_Test_Routine (T, Example_5'Access, "Request parser (example 5 - get)");
+      Add_Test_Routine (T, Example_6'Access, "Request parser (example 6 - websocket)");
    end Initialize;
 end Black.Tests.Request;
