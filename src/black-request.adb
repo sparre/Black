@@ -49,8 +49,12 @@ package body Black.Request is
          raise Protocol_Error
            with "Can not split """ & To_String (Line) & """ in key and value.";
       else
-         null; --  Not storing any data from headers at the moment.
-         pragma Unreferenced (Request, Key, Value);
+         if Key = "Upgrade" and Value = "websocket" then
+            Request.Websocket := True;
+         elsif Key = "Sec-Websocket-Key" then
+            Request.Websocket_Key := To_Unbounded_String (Value);
+            Request.Has_Websocket_Key := True;
+         end if;
       end if;
    end Parse;
 
@@ -203,4 +207,26 @@ package body Black.Request is
          return Ada.Strings.Unbounded.To_String (Request.Resource);
       end if;
    end Resource;
+
+   function Want_Websocket (Request : in Instance) return Boolean is
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      else
+         return Request.Websocket;
+      end if;
+   end Want_Websocket;
+
+   function Websocket_Key  (Request : in Instance) return String is
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      elsif not Request.Websocket then
+         raise Constraint_Error with "Not a websocket request.";
+      elsif Request.Has_Websocket_Key then
+         return Ada.Strings.Unbounded.To_String (Request.Websocket_Key);
+      else
+         raise Protocol_Error with "Request has no websocket key.";
+      end if;
+   end Websocket_Key;
 end Black.Request;

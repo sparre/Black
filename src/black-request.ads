@@ -17,6 +17,9 @@ package Black.Request is
    function Resource   (Request : in Instance) return String;
    function Parameters (Request : in Instance) return Parameter.Vectors.Vector;
 
+   function Want_Websocket (Request : in Instance) return Boolean;
+   function Websocket_Key  (Request : in Instance) return String;
+
    Protocol_Error : exception;
 
    function Parse_HTTP
@@ -34,9 +37,12 @@ private
 
    type Instance is tagged
       record
-         Blank      : Boolean := True;
-         Resource   : Ada.Strings.Unbounded.Unbounded_String;
-         Method     : HTTP.Methods;
-         Parameters : Parameter.Vectors.Vector;
+         Blank             : Boolean := True;
+         Resource          : Ada.Strings.Unbounded.Unbounded_String;
+         Method            : HTTP.Methods;
+         Parameters        : Parameter.Vectors.Vector;
+         Websocket         : Boolean := False;
+         Has_Websocket_Key : Boolean := False;
+         Websocket_Key     : Ada.Strings.Unbounded.Unbounded_String;
       end record;
 end Black.Request;
