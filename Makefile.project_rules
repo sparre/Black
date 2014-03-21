@@ -6,17 +6,8 @@ ahven:
 	if [ -d ahven ]; then ( cd ahven && hg pull && hg update && hg revert --all ); else ( rm -f ahven && hg clone https://bitbucket.org/tkoskine/ahven ); fi
 	mkdir -p tests/results
 
-src/url_utilities.ads:
-	ln -fs "$$(find ~/ -type f -name url_utilities.ads | egrep "^$${HOME}" | head -n1)" src/
+libesl:
+	if [ -d libesl ]; then ( cd libesl && git pull ); else ( rm -f libesl && git clone https://github.com/AdaHeads/libesl libesl ); fi
 
-src/url_utilities.adb:
-	ln -fs "$$(find ~/ -type f -name url_utilities.adb | egrep "^$${HOME}" | head -n1)" src/
-
-src/hex_utilities.ads:
-	ln -fs "$$(find ~/ -type f -name hex_utilities.ads | egrep "^$${HOME}" | head -n1)" src/
-
-src/hex_utilities.adb:
-	ln -fs "$$(find ~/ -type f -name hex_utilities.adb | egrep "^$${HOME}" | head -n1)" src/
-
-.PHONY: ahven
+.PHONY: ahven libesl
 

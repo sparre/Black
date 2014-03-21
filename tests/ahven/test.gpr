@@ -5,7 +5,8 @@ with "../../ahven/gnat/ahven_lib";
 
 project Test is
    for Source_Dirs use (".",
-       		        "../../src/");
+                        "../../src/",
+                        "../../libesl/src/");
 
    for Main use ("black-tests-run");
 

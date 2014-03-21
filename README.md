@@ -9,7 +9,18 @@ We constrain ourselves to use only Ada 2005 (as Debian/stable doesn't have a goo
 Dependencies
 ------------
 
-We're currently considering if we should use GNAT.Sockets or POSIX.Sockets (from FLORIST) for network operations.  Other suggestions for a (preferably compiler and operating system independent) socket library are most welcome.
+- GNU Make
+  + for build management.
+- GNAT
+  + as we haven't written build scripts for other compilers yet.
+- Ahven
+  + for testing.
+- libesl
+  + for URL encoding and decoding.
+- Bash
+  + for managing test cases.
+- Zsh
+  + used to implement some tests.
 
 
 Requirements
@@ -24,6 +35,8 @@ Included tests
 1. 'cyclomatic_complexity' - reports excessive cyclomatic complexities in the
    project sources.
 2. 'unused_units' - warns about units which aren't compiled.
+3. 'ahven' - unit tests.
+4. 'task_interfaces_and_extended_return' - testing for a bug in GNAT.
 
 
 Links
@@ -42,3 +55,4 @@ Sparre Andersen [4].
    https://github.com/AdaHeads
 4. Jacob Sparre Andersen's repositories on Bitbucket:
    http://repositories.jacob-sparre.dk/
+

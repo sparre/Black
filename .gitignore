@@ -27,8 +27,7 @@
 
 # Generated and downloaded source files:
 /ahven/
-/src/url_utilities.ad[sb]
-/src/hex_utilities.ad[sb]
+/libesl/
 
 # Generated object files:
 /obj/*.ali
