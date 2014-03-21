@@ -9,7 +9,6 @@ package body Black.Response is
    begin
       return R : Instance do
          Put_Line (R.Data, "HTTP/1.1 404 Not Found");
-         Put_Line (R.Data, "Content-Length: 0");
          Put_Line (R.Data, "Content-Type: text/plain; charset=iso-8859-1");
          Put_Line (R.Data, "Content-Length:" & Natural'Image (Message'Length));
          New_Line (R.Data);
