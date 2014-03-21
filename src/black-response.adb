@@ -83,4 +83,18 @@ package body Black.Response is
          R.Complete := True;
       end return;
    end Redirect;
+
+   function Switch_To_Websocket (Accept_Key : in String) return Class is
+      use Text_IO;
+   begin
+      return R : Instance do
+         Put_Line (R.Data, "HTTP/1.1 101 Switching Protocols");
+         Put_Line (R.Data, "Upgrade: websocket");
+         Put_Line (R.Data, "Connection: Upgrade");
+         Put_Line (R.Data, "Sec-WebSocket-Accept: " & Accept_Key);
+         New_Line (R.Data);
+
+         R.Complete := True;
+      end return;
+   end Switch_To_Websocket;
 end Black.Response;
