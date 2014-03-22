@@ -1,9 +1,12 @@
 ifndef OS_VERSION
    $(error Ahven needs you to set OS_VERSION to either "unix" or "windows".)
+else
+   export OS_VERSION
 endif
 
 ahven:
 	if [ -d ahven ]; then ( cd ahven && hg pull && hg update && hg revert --all ); else ( rm -f ahven && hg clone https://bitbucket.org/tkoskine/ahven ); fi
+	perl -i~ -lpe 's|external [(]"OS_VERSION", "windows"[)];|external ("OS_VERSION");|' ahven/gnat/ahven_lib.gpr
 	mkdir -p tests/results
 
 libesl:
