@@ -51,7 +51,7 @@ package body Black.Request is
       else
          if Key = "UPGRADE" and Value = "websocket" then
             Request.Websocket := True;
-         elsif Key = "Sec-Websocket-Key" then
+         elsif Key = "SEC-WEBSOCKET-KEY" then
             Request.Websocket_Key := To_Unbounded_String (Value);
             Request.Has_Websocket_Key := True;
          end if;
