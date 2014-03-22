@@ -15,6 +15,7 @@ package body Black.Tests.Request is
       Resource_Requested : String;
       Parameters_Passed  : Parameter.Vectors.Vector;
       Want_Websocket     : Boolean := False;
+      Websocket_Key      : String := "";
    procedure Parser_Test;
 
    function Image (Item : in Parameter.Instance) return String;
@@ -88,6 +89,13 @@ package body Black.Tests.Request is
               (Condition => Want_Websocket = Got.Want_Websocket,
                Message   => "Parser found " & Source_File_Name &
                             " not to ask for a websocket.");
+
+            Ahven.Assert
+              (Condition => Websocket_Key = Got.Websocket_Key,
+               Message   => "Parser found " & Source_File_Name &
+                            " to pass the websocket key " &
+                            Got.Websocket_Key & " where " &
+                            Websocket_Key & " was expected.");
          else
             Ahven.Assert
               (Condition => Want_Websocket = Got.Want_Websocket,
@@ -161,7 +169,8 @@ package body Black.Tests.Request is
                        Method_Used        => HTTP.Get,
                        Resource_Requested => "/chat",
                        Parameters_Passed  => Parameter.Vectors.Empty_Vector,
-                       Want_Websocket     => True);
+                       Want_Websocket     => True,
+                       Websocket_Key      => "dGhlIHNhbXBsZSBub25jZQ==");
 
    pragma Style_Checks (Off);
    overriding
