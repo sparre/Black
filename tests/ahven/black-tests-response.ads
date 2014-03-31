@@ -9,8 +9,7 @@ package Black.Tests.Response is
 private
    procedure Redirection;
    procedure Plain_Text_Document;
-   procedure HTML_Document;
-   procedure JSON_Document;
+   procedure Non_Text_Document;
    procedure Nonexistent_Resource;
    procedure Websocket;
 end Black.Tests.Response;

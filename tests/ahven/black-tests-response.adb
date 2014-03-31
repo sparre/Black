@@ -2,11 +2,6 @@ with
   Black.Response;
 
 package body Black.Tests.Response is
-   procedure HTML_Document is
-   begin
-      Ahven.Skip (Message => "Not implemented yet.");
-   end HTML_Document;
-
    overriding
    procedure Initialize (T : in out Test) is
       use Ahven.Framework;
@@ -17,18 +12,27 @@ package body Black.Tests.Response is
 
       Add_Test_Routine (T,  Redirection'Access,          "Redirection");
       Add_Test_Routine (T,  Plain_Text_Document'Access,  "Plain text document");
-      Add_Test_Routine (T,  HTML_Document'Access,        "HTML document");
-      Add_Test_Routine (T,  JSON_Document'Access,        "JSON document");
+      Add_Test_Routine (T,  Non_Text_Document'Access,    "Non-text document");
       Add_Test_Routine (T,  Nonexistent_Resource'Access, "Non-existent resource");
       Add_Test_Routine (T,  Websocket'Access,            "Websocket");
 
       pragma Style_Checks ("M79"); --  Standard line length
    end Initialize;
 
-   procedure JSON_Document is
+   procedure Non_Text_Document is
    begin
-      Ahven.Skip (Message => "Not implemented yet.");
-   end JSON_Document;
+      declare
+         O : Black.Response.Class :=
+               Black.Response.OK (Content_Type => "application/raw",
+                                  Data         => (1 => 65,
+                                                   2 => 67,
+                                                   3 => 68,
+                                                   4 => 67));
+         pragma Unreferenced (O);
+      begin
+         null;
+      end;
+   end Non_Text_Document;
 
    procedure Nonexistent_Resource is
    begin
@@ -70,7 +74,8 @@ package body Black.Tests.Response is
    begin
       declare
          O : Black.Response.Class :=
-               Black.Response.Switch_To_Websocket (Key => "AAA");
+               Black.Response.Switch_To_Websocket
+                 (Key => "dGhlIHNhbXBsZSBub25jZQ==");
          pragma Unreferenced (O);
       begin
          null;
