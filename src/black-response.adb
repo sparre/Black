@@ -170,7 +170,7 @@ package body Black.Response is
             for Index in Octets'Range loop
                declare
                   Hex_Offset : constant Positive :=
-                                 Hex'First + Positive (2 * Index);
+                                 Hex'First + Positive'Base (2 * Index);
                begin
                   Octets (Index) :=
                     Storage_Element'Value
