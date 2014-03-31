@@ -37,8 +37,27 @@ if diff ${generated_units} ${source_units} | grep '^> ' 1>/dev/null; then
    echo "Unused units:"
    diff ${generated_units} ${source_units} | grep '^> '
    result=1
+
+   (
+      echo '<?xml version="1.0" encoding="iso-8859-1"?>'
+      echo '<testsuite errors="1" failures="0" skips="0" tests="1" name="Unused units">'
+      echo '  <testcase classname="Unused units" name="check">'
+      diff ${generated_units} ${source_units} \
+        | grep '^> ' \
+        | sed 's/^> /    /'
+      echo '  </testcase>'
+      echo '</testsuite>'
+   ) > "../results/$(basename "$(pwd)").xml"
 else
    result=0
+
+   (
+      echo '<?xml version="1.0" encoding="iso-8859-1"?>'
+      echo '<testsuite errors="0" failures="0" skips="0" tests="1" name="Unused units">'
+      echo '  <testcase classname="Unused units" name="check">'
+      echo '  </testcase>'
+      echo '</testsuite>'
+   ) > "../results/$(basename "$(pwd)").xml"
 fi
 
 rm -f ${generated_units} ${source_units}
