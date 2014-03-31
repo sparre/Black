@@ -119,34 +119,43 @@ package body Black.Response is
       begin
          while O_Pos in Octets'Range loop
             declare
-               First      : Storage_Element renames Octets (O_Pos);
-               Second     : Storage_Element renames Octets (O_Pos + 1);
-               Third      : Storage_Element renames Octets (O_Pos + 2);
                A, B, C, D : Sextet;
             begin
-               --  1st byte:
-               A := (First and 2#1111_1100#) / 2 ** 2;
-               B := (First and 2#0000_0011#) * 2 ** 4;
+               First_Byte :
+               declare
+                  First : Storage_Element renames Octets (O_Pos);
+               begin
+                  A := (First and 2#1111_1100#) / 2 ** 2;
+                  B := (First and 2#0000_0011#) * 2 ** 4;
 
-               if O_Pos = Octets'Last then
-                  Result (R_Pos .. R_Pos + 3) :=
-                    Alphabet (A) & Alphabet (B) & "==";
-                  return Result;
-               end if;
+                  if O_Pos = Octets'Last then
+                     Result (R_Pos .. R_Pos + 3) :=
+                       Alphabet (A) & Alphabet (B) & "==";
+                     return Result;
+                  end if;
+               end First_Byte;
 
-               --  2nd byte:
-               B := B or (Second and 2#1111_0000#) / 2 ** 4;
-               C :=      (Second and 2#0000_1111#) * 2 ** 2;
+               Second_Byte :
+               declare
+                  Second : Storage_Element renames Octets (O_Pos + 1);
+               begin
+                  B := B or (Second and 2#1111_0000#) / 2 ** 4;
+                  C :=      (Second and 2#0000_1111#) * 2 ** 2;
 
-               if O_Pos + 1 = Octets'Last then
-                  Result (R_Pos .. R_Pos + 3) :=
-                    Alphabet (A) & Alphabet (B) & Alphabet (C) & "=";
-                  return Result;
-               end if;
+                  if O_Pos + 1 = Octets'Last then
+                     Result (R_Pos .. R_Pos + 3) :=
+                       Alphabet (A) & Alphabet (B) & Alphabet (C) & "=";
+                     return Result;
+                  end if;
+               end Second_Byte;
 
-               --  3rd byte:
-               C := C or (Third and 2#1100_0000#) / 2 ** 6;
-               D :=      (Third and 2#0011_1111#);
+               Third_Byte :
+               declare
+                  Third : Storage_Element renames Octets (O_Pos + 2);
+               begin
+                  C := C or (Third and 2#1100_0000#) / 2 ** 6;
+                  D :=      (Third and 2#0011_1111#);
+               end Third_Byte;
 
                Result (R_Pos .. R_Pos + 3) :=
                  Alphabet (A) & Alphabet (B) & Alphabet (C) & Alphabet (D);
