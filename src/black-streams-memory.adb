@@ -1,4 +1,13 @@
 package body Black.Streams.Memory is
+   not overriding
+   function Copy (Stream : in Instance) return Instance is
+   begin
+      return Result : Instance do
+         Result.Data := Stream.Data;
+         Result.Next := Stream.Next;
+      end return;
+   end Copy;
+
    overriding
    procedure Read (Stream : in out Instance;
                    Item   :    out Ada.Streams.Stream_Element_Array;

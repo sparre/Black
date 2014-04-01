@@ -1,5 +1,6 @@
 with
-  Ada.Characters.Latin_1;
+  Ada.Characters.Latin_1,
+  Ada.IO_Exceptions;
 
 package body Black.Text_IO is
    function Get_Line
@@ -30,25 +31,33 @@ package body Black.Text_IO is
             Append (Buffer, Next);
          end if;
       end loop;
+   exception
+      when Ada.IO_Exceptions.End_Error =>
+         if Buffer = Null_Unbounded_String then
+            raise;
+         else
+            return Buffer;
+         end if;
    end Get_Line;
 
-   procedure New_Line (Target : in out Stream_Element_Vectors.Vector) is
+   procedure New_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class) is
    begin
       Put (Target => Target,
            Item   => Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
    end New_Line;
 
-   procedure Put (Target : in out Stream_Element_Vectors.Vector;
-                  Item   : in     String) is
-      Buffer : Ada.Streams.Stream_Element_Array (1 .. Item'Length);
-      for Buffer'Address use Item'Address;
-      pragma Assert (Buffer'Size = Item'Size);
+   procedure Put
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     String) is
+      pragma Assert (Ada.Streams.Stream_Element'Size = Character'Size);
    begin
-      Target.Append (Buffer);
+      String'Write (Target, Item);
    end Put;
 
-   procedure Put_Line (Target : in out Stream_Element_Vectors.Vector;
-                       Item   : in     String) is
+   procedure Put_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     String) is
    begin
       Put (Target => Target,
            Item   => Item &

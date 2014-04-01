@@ -15,6 +15,9 @@ package Black.Streams.Memory is
    overriding
    procedure Write (Stream : in out Instance;
                     Item   : in     Ada.Streams.Stream_Element_Array);
+
+   not overriding
+   function Copy (Stream : in Instance) return Instance;
 private
    package Lists is
       new Ada.Containers.Indefinite_Doubly_Linked_Lists

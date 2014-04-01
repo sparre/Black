@@ -1,23 +1,41 @@
 with
-  Ada.Tags;
+  Ada.Strings.Unbounded;
 with
   Black.Response,
-  Black.Streams.Memory;
+  Black.Streams.Memory,
+  Black.Text_IO;
 
 package body Black.Tests.Memory_Streams is
    procedure HTTP_Responses is
-      use type Ada.Tags.Tag;
+      use Ada.Strings.Unbounded;
       use Black.Response;
-      Buffer : aliased Streams.Memory.Instance;
-      Input  : constant Class := OK ("We are living in a yellow ...");
-      Output : Class := Not_Found ("none");
-   begin
-      Class'Write (Buffer'Access, Input);
-      Class'Read  (Buffer'Access, Output);
 
-      Ahven.Assert
-        (Condition => Input = Output,
-         Message   => "Output from in-memory stream inconsistent with input.");
+      function "+" (Item : in String) return Unbounded_String
+        renames To_Unbounded_String;
+
+      Buffer   : aliased Streams.Memory.Instance;
+      Message  : constant String := "We are living in a yellow ...";
+      Input    : constant Class  := OK (Message);
+      Expected : constant array (1 .. 5) of Unbounded_String :=
+        (+"HTTP/1.1 200 OK",
+         +"Content-Type: text/plain; charset=iso-8859-1",
+         +"Content-Length:" & Natural'Image (Message'Length),
+         +"",
+         +Message);
+   begin
+      Class'Output (Buffer'Access, Input);
+
+      for Line in Expected'Range loop
+         declare
+            Output : constant String := Text_IO.Get_Line (Buffer'Access);
+         begin
+            Ahven.Assert
+              (Condition => Expected (Line) = +Output,
+               Message   => "Got """ & Output & """ when """ &
+                            To_String (Expected (Line)) &
+                            """ was expected.");
+         end;
+      end loop;
    end HTTP_Responses;
 
    overriding

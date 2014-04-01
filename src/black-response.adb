@@ -12,11 +12,13 @@ package body Black.Response is
                                    "' was not found on the server.";
    begin
       return R : Instance do
-         Put_Line (R.Data, "HTTP/1.1 404 Not Found");
-         Put_Line (R.Data, "Content-Type: text/plain; charset=iso-8859-1");
-         Put_Line (R.Data, "Content-Length:" & Natural'Image (Message'Length));
-         New_Line (R.Data);
-         Put      (R.Data, Message);
+         Put_Line (R.Data'Access, "HTTP/1.1 404 Not Found");
+         Put_Line (R.Data'Access, "Content-Type: text/plain; " &
+                                    "charset=iso-8859-1");
+         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
+                                                        (Message'Length));
+         New_Line (R.Data'Access);
+         Put      (R.Data'Access, Message);
 
          R.Complete := True;
       end return;
@@ -28,11 +30,12 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data, "HTTP/1.1 200 OK");
-         Put_Line (R.Data, "Content-Type: " & Content_Type);
-         Put_Line (R.Data, "Content-Length:" & Natural'Image (Data'Length));
-         New_Line (R.Data);
-         R.Data.Append (Data);
+         Put_Line (R.Data'Access, "HTTP/1.1 200 OK");
+         Put_Line (R.Data'Access, "Content-Type: " & Content_Type);
+         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
+                                                        (Data'Length));
+         New_Line (R.Data'Access);
+         R.Data.Write (Data);
 
          R.Complete := True;
       end return;
@@ -43,25 +46,42 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data, "HTTP/1.1 200 OK");
-         Put_Line (R.Data, "Content-Type: text/plain; charset=iso-8859-1");
-         Put_Line (R.Data, "Content-Length:" & Natural'Image (Data'Length));
-         New_Line (R.Data);
-         Put      (R.Data, Data);
+         Put_Line (R.Data'Access, "HTTP/1.1 200 OK");
+         Put_Line (R.Data'Access, "Content-Type: text/plain; " &
+                                    "charset=iso-8859-1");
+         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
+                                                        (Data'Length));
+         New_Line (R.Data'Access);
+         Put      (R.Data'Access, Data);
 
          R.Complete := True;
       end return;
    end OK;
 
+   procedure Output
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in              Class) is
+   begin
+      Output_HTTP (Stream, Item);
+   end Output;
+
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in              Instance) is
-      use Ada.Streams;
    begin
       if Item.Complete then
-         for Index in Item.Data.First_Index .. Item.Data.Last_Index loop
-            Stream.Write (Item.Data.Element (Index));
-         end loop;
+         declare
+            use Ada.Streams;
+            Data   : Streams.Memory.Instance := Item.Data.Copy;
+            Buffer : Stream_Element_Array (1 .. 10_000);
+            Last   : Stream_Element_Offset;
+         begin
+            loop
+               Data.Read (Buffer, Last);
+               Stream.Write (Buffer (Buffer'First .. Last));
+               exit when Last < Buffer'Last;
+            end loop;
+         end;
       else
          raise Constraint_Error
            with "Response object is not ready to be streamed.";
@@ -75,14 +95,14 @@ package body Black.Response is
    begin
       return R : Instance do
          if Permanent then
-            Put_Line (R.Data, "HTTP/1.1 301 Moved Permanently");
+            Put_Line (R.Data'Access, "HTTP/1.1 301 Moved Permanently");
          else
-            Put_Line (R.Data, "HTTP/1.1 302 Moved Temporarily");
+            Put_Line (R.Data'Access, "HTTP/1.1 302 Moved Temporarily");
          end if;
 
-         Put_Line (R.Data, "Location: " & Target);
-         Put_Line (R.Data, "Content-Length: 0");
-         New_Line (R.Data);
+         Put_Line (R.Data'Access, "Location: " & Target);
+         Put_Line (R.Data'Access, "Content-Length: 0");
+         New_Line (R.Data'Access);
 
          R.Complete := True;
       end return;
@@ -192,11 +212,11 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data, "HTTP/1.1 101 Switching Protocols");
-         Put_Line (R.Data, "Upgrade: websocket");
-         Put_Line (R.Data, "Connection: Upgrade");
-         Put_Line (R.Data, "Sec-WebSocket-Accept: " & Accept_Key);
-         New_Line (R.Data);
+         Put_Line (R.Data'Access, "HTTP/1.1 101 Switching Protocols");
+         Put_Line (R.Data'Access, "Upgrade: websocket");
+         Put_Line (R.Data'Access, "Connection: Upgrade");
+         Put_Line (R.Data'Access, "Sec-WebSocket-Accept: " & Accept_Key);
+         New_Line (R.Data'Access);
 
          R.Complete := True;
       end return;

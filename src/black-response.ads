@@ -3,10 +3,10 @@ with
 
 private
 with
-  Black.Stream_Element_Vectors;
+  Black.Streams.Memory;
 
 package Black.Response is
-   type Instance is tagged private;
+   type Instance is tagged limited private;
    subtype Class is Instance'Class;
 
    function Redirect (Target    : in String;
@@ -22,16 +22,21 @@ package Black.Response is
    function Not_Found (Resource : in String) return Class;
 
    function Switch_To_Websocket (Key : in String) return Class;
-private
+
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in              Instance);
 
-   for Instance'Output use Output_HTTP;
+   procedure Output
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in              Class);
 
-   type Instance is tagged
+   for Instance'Output       use Output_HTTP;
+   for Instance'Class'Output use Output;
+private
+   type Instance is tagged limited
       record
-         Data     : Stream_Element_Vectors.Vector;
+         Data     : aliased Streams.Memory.Instance;
          Complete : Boolean := False;
       end record;
 end Black.Response;
