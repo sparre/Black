@@ -7,6 +7,49 @@ with
   Black.Text_IO;
 
 package body Black.Request is
+
+   function Has_Parameter (Request : in Instance;
+                           Key     : in String) return Boolean is
+      use Black.Parameter.Vectors;
+   begin
+      for C in Request.Parameters.Iterate loop
+         if Ada.Strings.Unbounded.To_String (Element (C).Key) = Key then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Has_Parameter;
+
+   function Get_Parameter (Request : in Instance;
+                           Key     : in String;
+                           Default : in String) return String is
+      use Black.Parameter;
+   begin
+      return Request.Parameter (Key => Key);
+   exception
+      when No_Such_Parameter_Key | No_Such_Parameter_Value =>
+         return Default;
+   end Get_Parameter;
+
+   function Get_Parameter (Request : in Instance;
+                       Key     : in String) return String is
+      use Black.Parameter;
+      use Black.Parameter.Vectors;
+   begin
+      if not Request.Has_Parameter (Key => Key) then
+         raise No_Such_Parameter_Key;
+      end if;
+
+      for C in Request.Parameters.Iterate loop
+         if Ada.Strings.Unbounded.To_String (Element (C).Key) = Key then
+            return Ada.Strings.Unbounded.To_String (Element (C).Value);
+         end if;
+      end loop;
+
+      raise No_Such_Parameter_Value;
+   end Get_Parameter;
+
    function Method (Request : in Instance) return HTTP.Methods is
    begin
       if Request.Blank then
