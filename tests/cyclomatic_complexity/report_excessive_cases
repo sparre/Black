@@ -44,15 +44,20 @@ if [ ! -r generated_source_files ]; then
 fi
 
 #-----------------------------------------------------------------------------
+#--  Prepare test report:
+
+test_report=$(mktemp)
+
+#-----------------------------------------------------------------------------
 #--  Check excessive cases:
 
 local counter=0
 
 cut -f1 execessive_cases \
   | LANG=C sort -u \
-  | diff <(LANG=C sort -u generated_source_files) - \
+  | diff <(xargs -n1 basename < generated_source_files | LANG=C sort -u) - \
   | grep '^> ' \
-  | cut -c3 \
+  | cut -c3- \
   | while read unit; do
        source="$(find ../../src -name "${unit}")"
 
@@ -68,14 +73,52 @@ cut -f1 execessive_cases \
                | tail -n +${from_line} \
                | grep -- '--  Excessive cyclomatic complexity:' 1>/dev/null; then
              true
+
+             (
+	        echo '  <testcase classname="Excessive Cyclomatic Complexity" name="'"${unit}.${subprogram} - ${from_line} .. ${to_line}"'">'
+	        echo '  </testcase>'
+	     ) >> ${test_report}
           else
              let counter++
              echo "'${unit}' has unexplained excessive cyclomatic complexity." 1>&2
+
+             (
+	        echo '  <testcase classname="Excessive Cyclomatic Complexity" name="'"${unit}.${subprogram} - ${from_line} .. ${to_line}"'">'
+                echo '    <failure type="Unexplained excessive cyclomatic complexity">'
+	        echo '    </failure>'
+	        echo '  </testcase>'
+	     ) >> ${test_report}
           fi
        else
           echo "'${unit}' not a part of this project." 1>&2
+
+          (
+	     echo '  <testcase classname="Excessive Cyclomatic Complexity" name="'"${unit}.${subprogram} - ${from_line} .. ${to_line}"'">'
+               echo '    <skipped type="Outside the project">'
+	       echo '    </skipped>'
+	       echo '  </testcase>'
+	  ) >> ${test_report}
        fi
     done
+
+#-----------------------------------------------------------------------------
+#--  Compose test report:
+
+skips=$(grep -c '<skipped ' ${test_report})
+failures=$(grep -c '<failure ' ${test_report})
+errors=$(grep -c '<error ' ${test_report})
+tests=$(grep -c '<testcase ' ${test_report})
+
+(
+   echo '<?xml version="1.0" encoding="iso-8859-1"?>'
+   echo '<testsuite errors="'${errors}'" failures="'${failures}'" skips="'${skips}'" tests="'${tests}'" name="Cyclomatic complexity">'
+   cat ${test_report}
+   echo '</testsuite>'
+) > "../results/$(basename $(pwd)).xml"
+
+rm -f ${test_report}
+
+let counter=${skips}+${failures}+${errors}
 
 #-----------------------------------------------------------------------------
 #--  Clean up:
