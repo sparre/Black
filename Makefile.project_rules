@@ -15,7 +15,9 @@ ahven-update: ahven
 
 libesl:
 	if [ ! -d libesl ]; then ( rm -f libesl && git clone https://github.com/AdaHeads/libesl libesl ); fi
+	rm -f libesl/src/esl*.ad[sb]
 
 libesl-update: libesl
 	cd libesl && git pull
+	rm -f libesl/src/esl*.ad[sb]
 
