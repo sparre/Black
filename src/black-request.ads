@@ -20,8 +20,8 @@ package Black.Request is
    function Has_Parameter (Request : in Instance;
                            Key     : in String) return Boolean;
    function Parameter (Request : in Instance;
-		       Key     : in String;
-		       Default : in String) return String;
+                       Key     : in String;
+                       Default : in String) return String;
    function Parameter (Request : in Instance;
                        Key     : in String) return String;
 

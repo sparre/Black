@@ -3,6 +3,7 @@ with
 with
   GNAT.SHA1;
 with
+  Black.Constants,
   Black.Text_IO;
 
 package body Black.Response is
@@ -12,7 +13,7 @@ package body Black.Response is
                                    "' was not found on the server.";
    begin
       return R : Instance do
-         Put_Line (R.Data'Access, "HTTP/1.1 404 Not Found");
+         Put_Line (R.Data'Access, Constants.Not_Found);
          Put_Line (R.Data'Access, "Content-Type: text/plain; " &
                                     "charset=iso-8859-1");
          Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
@@ -30,7 +31,7 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data'Access, "HTTP/1.1 200 OK");
+         Put_Line (R.Data'Access, Constants.OK);
          Put_Line (R.Data'Access, "Content-Type: " & Content_Type);
          Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
                                                         (Data'Length));
@@ -46,7 +47,7 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data'Access, "HTTP/1.1 200 OK");
+         Put_Line (R.Data'Access, Constants.OK);
          Put_Line (R.Data'Access, "Content-Type: text/plain; " &
                                     "charset=iso-8859-1");
          Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
@@ -95,9 +96,9 @@ package body Black.Response is
    begin
       return R : Instance do
          if Permanent then
-            Put_Line (R.Data'Access, "HTTP/1.1 301 Moved Permanently");
+            Put_Line (R.Data'Access, Constants.Moved_Permanently);
          else
-            Put_Line (R.Data'Access, "HTTP/1.1 302 Moved Temporarily");
+            Put_Line (R.Data'Access, Constants.Moved_Temporarily);
          end if;
 
          Put_Line (R.Data'Access, "Location: " & Target);
@@ -212,7 +213,7 @@ package body Black.Response is
       use Text_IO;
    begin
       return R : Instance do
-         Put_Line (R.Data'Access, "HTTP/1.1 101 Switching Protocols");
+         Put_Line (R.Data'Access, Constants.Switching_Protocols);
          Put_Line (R.Data'Access, "Upgrade: websocket");
          Put_Line (R.Data'Access, "Connection: Upgrade");
          Put_Line (R.Data'Access, "Sec-WebSocket-Accept: " & Accept_Key);
