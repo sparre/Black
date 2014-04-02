@@ -10,10 +10,12 @@ package body Black.Request is
 
    function Has_Parameter (Request : in Instance;
                            Key     : in String) return Boolean is
+      use Ada.Strings.Unbounded;
       use Black.Parameter.Vectors;
    begin
-      for C in Request.Parameters.Iterate loop
-         if Ada.Strings.Unbounded.To_String (Element (C).Key) = Key then
+      for Index in Request.Parameters.First_Index ..
+                   Request.Parameters.Last_Index loop
+         if To_String (Request.Parameters.Element (Index).Key) = Key then
             return True;
          end if;
       end loop;
@@ -50,10 +52,16 @@ package body Black.Request is
          raise No_Such_Parameter_Key;
       end if;
 
-      for C in Request.Parameters.Iterate loop
-         if Ada.Strings.Unbounded.To_String (Element (C).Key) = Key then
-            return Ada.Strings.Unbounded.To_String (Element (C).Value);
-         end if;
+      for Index in Request.Parameters.First_Index ..
+                   Request.Parameters.Last_Index loop
+         declare
+            P : Black.Parameter.Instance renames
+                  Request.Parameters.Element (Index);
+         begin
+            if Ada.Strings.Unbounded.To_String (P.Key) = Key then
+               return Ada.Strings.Unbounded.To_String (P.Value);
+            end if;
+         end;
       end loop;
 
       raise No_Such_Parameter_Value;
