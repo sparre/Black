@@ -21,18 +21,27 @@ package body Black.Request is
       return False;
    end Has_Parameter;
 
-   function Get_Parameter (Request : in Instance;
-                           Key     : in String;
-                           Default : in String) return String is
+   function Method (Request : in Instance) return HTTP.Methods is
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      else
+         return Request.Method;
+      end if;
+   end Method;
+
+   function Parameter (Request : in Instance;
+                       Key     : in String;
+                       Default : in String) return String is
       use Black.Parameter;
    begin
       return Request.Parameter (Key => Key);
    exception
       when No_Such_Parameter_Key | No_Such_Parameter_Value =>
          return Default;
-   end Get_Parameter;
+   end Parameter;
 
-   function Get_Parameter (Request : in Instance;
+   function Parameter (Request : in Instance;
                        Key     : in String) return String is
       use Black.Parameter;
       use Black.Parameter.Vectors;
@@ -48,19 +57,10 @@ package body Black.Request is
       end loop;
 
       raise No_Such_Parameter_Value;
-   end Get_Parameter;
-
-   function Method (Request : in Instance) return HTTP.Methods is
-   begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      else
-         return Request.Method;
-      end if;
-   end Method;
+   end Parameter;
 
    function Parameters (Request : in Instance)
-                       return Parameter.Vectors.Vector is
+                       return Black.Parameter.Vectors.Vector is
    begin
       if Request.Blank then
          raise Constraint_Error with "Request is blank.";
@@ -136,15 +136,15 @@ package body Black.Request is
       Line    : in     Ada.Strings.Unbounded.Unbounded_String) is
 
       function Parse_Parameters (Raw : in String)
-                                return Parameter.Vectors.Vector;
+                                return Black.Parameter.Vectors.Vector;
 
       function Parse_Parameters (Raw : in String)
-                                return Parameter.Vectors.Vector is
+                                return Black.Parameter.Vectors.Vector is
          use Ada.Strings.Fixed;
          From : Positive := Raw'First;
          Next : Positive;
       begin
-         return Result : Parameter.Vectors.Vector do
+         return Result : Black.Parameter.Vectors.Vector do
             loop
                exit when From > Raw'Last;
 
