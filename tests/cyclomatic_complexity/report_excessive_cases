@@ -55,7 +55,7 @@ local counter=0
 
 cut -f1 execessive_cases \
   | LANG=C sort -u \
-  | diff <(xargs -n1 basename < generated_source_files | LANG=C sort -u) - \
+  | diff <(xargs --no-run-if-empty -n1 basename < generated_source_files | LANG=C sort -u) - \
   | grep '^> ' \
   | cut -c3- \
   | while read unit; do
