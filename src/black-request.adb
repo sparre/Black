@@ -8,6 +8,21 @@ with
 
 package body Black.Request is
 
+   function Compose (Method   : in HTTP.Methods;
+                     Host     : in String;
+                     Resource : in String) return Instance is
+      use Ada.Strings.Unbounded;
+   begin
+      return (Blank             => False,
+              Method            => Method,
+              Host              => To_Unbounded_String (Host),
+              Resource          => To_Unbounded_String (Resource),
+              Parameters        => <>,
+              Websocket         => False,
+              Has_Websocket_Key => False,
+              Websocket_Key     => <>);
+   end Compose;
+
    function Has_Parameter (Request : in Instance;
                            Key     : in String) return Boolean is
       use Ada.Strings.Unbounded;
@@ -22,6 +37,18 @@ package body Black.Request is
 
       return False;
    end Has_Parameter;
+
+   function Host (Request : in Instance) return String is
+      use Ada.Strings.Unbounded;
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      elsif Request.Host = Null_Unbounded_String then
+         raise Protocol_Error with "No host name was provided.";
+      else
+         return To_String (Request.Host);
+      end if;
+   end Host;
 
    function Method (Request : in Instance) return HTTP.Methods is
    begin
@@ -100,7 +127,9 @@ package body Black.Request is
          raise Protocol_Error
            with "Can not split """ & To_String (Line) & """ in key and value.";
       else
-         if Key = "UPGRADE" and Value = "websocket" then
+         if Key = "HOST" then
+            Request.Host := To_Unbounded_String (Value);
+         elsif Key = "UPGRADE" and Value = "websocket" then
             Request.Websocket := True;
          elsif Key = "SEC-WEBSOCKET-KEY" then
             Request.Websocket_Key := To_Unbounded_String (Value);
