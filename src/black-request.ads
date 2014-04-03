@@ -8,6 +8,9 @@ with
 private
 with
   Ada.Strings.Unbounded;
+private
+with
+  Black.Parsing;
 
 package Black.Request is
    type Instance is tagged private;
@@ -40,9 +43,8 @@ private
    procedure Parse_Method_And_Resource
      (Request : in out Instance;
       Line    : in     Ada.Strings.Unbounded.Unbounded_String);
-   procedure Parse
-     (Request : in out Instance;
-      Line    : in     Ada.Strings.Unbounded.Unbounded_String);
+   procedure Parse (Request : in out Instance;
+                    Line    : in     Black.Parsing.Header_Line);
 
    for Instance'Input use Parse_HTTP;
 

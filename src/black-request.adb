@@ -1,5 +1,4 @@
 with
-  Ada.Characters.Handling,
   Ada.Strings.Fixed;
 with
   URL_Utilities;
@@ -105,36 +104,16 @@ package body Black.Request is
    end Parameters;
 
    procedure Parse (Request : in out Instance;
-                    Line    : in     Ada.Strings.Unbounded.Unbounded_String) is
-      function Key return String;
-      function Value return String;
-
-      use Ada.Strings.Unbounded;
-      Split_Position : constant Natural := Index (Line, ": ");
-
-      function Key return String is
-         use Ada.Characters.Handling;
-      begin
-         return To_Upper (Slice (Line, 1, Split_Position - 1));
-      end Key;
-
-      function Value return String is
-      begin
-         return Slice (Line, Split_Position + 2, Length (Line));
-      end Value;
+                    Line    : in     Black.Parsing.Header_Line) is
+      use type HTTP.Header_Key;
    begin
-      if Split_Position = 0 then
-         raise Protocol_Error
-           with "Can not split """ & To_String (Line) & """ in key and value.";
-      else
-         if Key = "HOST" then
-            Request.Host := To_Unbounded_String (Value);
-         elsif Key = "UPGRADE" and Value = "websocket" then
-            Request.Websocket := True;
-         elsif Key = "SEC-WEBSOCKET-KEY" then
-            Request.Websocket_Key := To_Unbounded_String (Value);
-            Request.Has_Websocket_Key := True;
-         end if;
+      if Line.Key = "Host" then
+         Request.Host := Line.Value;
+      elsif Line.Key = "Upgrade" and Line.Value = "websocket" then
+         Request.Websocket := True;
+      elsif Line.Key = "Sec-Websocket-Key" then
+         Request.Websocket_Key := Line.Value;
+         Request.Has_Websocket_Key := True;
       end if;
    end Parse;
 
@@ -142,29 +121,19 @@ package body Black.Request is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance is
       use Ada.Strings.Unbounded;
-      Previous_Line, Current_Line : Unbounded_String;
+      Header : Black.Parsing.Header;
+      Line   : Black.Parsing.Header_Line;
    begin
       return R : Instance do
          R.Parse_Method_And_Resource (Text_IO.Get_Line (Stream));
 
-         Previous_Line := Text_IO.Get_Line (Stream);
-
-         if Length (Previous_Line) > 0 then
-            loop
-               Current_Line := Text_IO.Get_Line (Stream);
-
-               if Length (Current_Line) = 0 then
-                  R.Parse (Previous_Line);
-                  exit;
-               elsif Element (Current_Line, 1) = ' ' then
-                  Current_Line := Previous_Line & Current_Line;
-               else
-                  R.Parse (Previous_Line);
-               end if;
-
-               Previous_Line := Current_Line;
-            end loop;
-         end if;
+         Header := Black.Parsing.Get (Stream);
+         while not Black.Parsing.End_Of_Header (Header) loop
+            Black.Parsing.Read (Stream => Stream,
+                                From   => Header,
+                                Item   => Line);
+            R.Parse (Line);
+         end loop;
       end return;
    end Parse_HTTP;
 
