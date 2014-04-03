@@ -118,7 +118,7 @@ tests=$(grep -c '<testcase ' ${test_report})
 
 rm -f ${test_report}
 
-let counter=${skips}+${failures}+${errors}
+let counter=${failures}+${errors}
 
 #-----------------------------------------------------------------------------
 #--  Clean up:
