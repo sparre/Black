@@ -3,10 +3,13 @@ with
 
 private
 with
-  Black.Streams.Memory;
+  Ada.Strings.Unbounded;
+private
+with
+  Black.HTTP;
 
 package Black.Response is
-   type Instance is tagged limited private;
+   type Instance (<>) is tagged private;
    subtype Class is Instance'Class;
 
    function Redirect (Target    : in String;
@@ -27,16 +30,30 @@ package Black.Response is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in              Instance);
 
+   function Input_HTTP
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+     return Instance;
+
    procedure Output
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in              Class);
 
    for Instance'Output       use Output_HTTP;
+   for Instance'Input        use Input_HTTP;
    for Instance'Class'Output use Output;
 private
-   type Instance is tagged limited
+   type Instance (Status : HTTP.Statuses) is tagged
       record
-         Data     : aliased Streams.Memory.Instance;
-         Complete : Boolean := False;
+         Content_Type : Ada.Strings.Unbounded.Unbounded_String;
+         Content      : Ada.Strings.Unbounded.Unbounded_String;
+
+         case Status is
+            when HTTP.Switching_Protocols =>
+               Websocket_Accept : HTTP.Websocket_Accept_Key;
+            when HTTP.Moved_Permanently | HTTP.Moved_Temporarily =>
+               Location : Ada.Strings.Unbounded.Unbounded_String;
+            when others =>
+               null;
+         end case;
       end record;
 end Black.Response;

@@ -1,62 +1,103 @@
 with
+  Ada.IO_Exceptions;
+with
   System.Storage_Elements;
 with
   GNAT.SHA1;
 with
-  Black.Constants,
+  Black.Parsing,
   Black.Text_IO;
 
 package body Black.Response is
-   function Not_Found (Resource : in String) return Class is
+   function Input_HTTP
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
+     return Instance is
+      use Ada.Strings.Unbounded;
       use Text_IO;
+      use type HTTP.Header_Key;
+      Status             : HTTP.Statuses;
+      Header             : Parsing.Header;
+      Line               : Parsing.Header_Line;
+      Got_Content_Length : Boolean := False;
+      Content_Length     : Natural := 0;
+   begin
+      Status := Parsing.Parse (Get_Line (Stream));
+      Header := Parsing.Get (Stream);
+
+      return R : Instance (Status) do
+         while not Parsing.End_Of_Header (Header) loop
+            Parsing.Read (Stream => Stream,
+                          From   => Header,
+                          Item   => Line);
+
+            if Line.Key = "Content-Type" then
+               R.Content_Type := Line.Value;
+            elsif Line.Key = "Content-Length" then
+               Got_Content_Length := True;
+               Content_Length     := Line.Value;
+            elsif Line.Key = "Location" then
+               R.Location := Line.Value;
+            elsif Line.Key = "Sec-Websocket-Accept" then
+               R.Websocket_Accept :=
+                 HTTP.Websocket_Accept_Key (String'(Line.Value));
+            end if;
+         end loop;
+
+         if Got_Content_Length then
+            declare
+               subtype Content is String (1 .. Content_Length);
+               Buffer : Content;
+            begin
+               Content'Read (Stream, Buffer);
+               R.Content := To_Unbounded_String (Buffer);
+            end;
+         else
+            declare
+               Buffer : Character;
+            begin
+               loop
+                  Character'Read (Stream, Buffer);
+                  Append (R.Content, Buffer);
+               end loop;
+            exception
+               when Ada.IO_Exceptions.End_Error =>
+                  null;
+            end;
+         end if;
+      end return;
+   end Input_HTTP;
+
+   function Not_Found (Resource : in String) return Class is
+      use Ada.Strings.Unbounded;
       Message : constant String := "The requested resource, '" & Resource &
                                    "' was not found on the server.";
    begin
-      return R : Instance do
-         Put_Line (R.Data'Access, Constants.Not_Found);
-         Put_Line (R.Data'Access, "Content-Type: text/plain; " &
-                                    "charset=iso-8859-1");
-         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
-                                                        (Message'Length));
-         New_Line (R.Data'Access);
-         Put      (R.Data'Access, Message);
-
-         R.Complete := True;
-      end return;
+      return Instance'(Status       => HTTP.Not_Found,
+                       Content_Type => To_Unbounded_String
+                                         ("text/plain; charset=iso-8859-1"),
+                       Content      => To_Unbounded_String (Message));
    end Not_Found;
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
                return Class is
-      use Text_IO;
+      use Ada.Strings.Unbounded;
+      pragma Assert (Ada.Streams.Stream_Element'Size = Character'Size);
+      Buffer : String (1 .. Data'Length);
+      for Buffer'Address use Data'Address;
    begin
-      return R : Instance do
-         Put_Line (R.Data'Access, Constants.OK);
-         Put_Line (R.Data'Access, "Content-Type: " & Content_Type);
-         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
-                                                        (Data'Length));
-         New_Line (R.Data'Access);
-         R.Data.Write (Data);
-
-         R.Complete := True;
-      end return;
+      return Instance'(Status       => HTTP.OK,
+                       Content_Type => To_Unbounded_String (Content_Type),
+                       Content      => To_Unbounded_String (Buffer));
    end OK;
 
-   function OK (Data : in String)
-               return Class is
-      use Text_IO;
+   function OK (Data : in String) return Class is
+      use Ada.Strings.Unbounded;
    begin
-      return R : Instance do
-         Put_Line (R.Data'Access, Constants.OK);
-         Put_Line (R.Data'Access, "Content-Type: text/plain; " &
-                                    "charset=iso-8859-1");
-         Put_Line (R.Data'Access, "Content-Length:" & Natural'Image
-                                                        (Data'Length));
-         New_Line (R.Data'Access);
-         Put      (R.Data'Access, Data);
-
-         R.Complete := True;
-      end return;
+      return Instance'(Status       => HTTP.OK,
+                       Content_Type => To_Unbounded_String
+                                         ("text/plain; charset=iso-8859-1"),
+                       Content      => To_Unbounded_String (Data));
    end OK;
 
    procedure Output
@@ -69,61 +110,90 @@ package body Black.Response is
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in              Instance) is
+      use Ada.Strings.Unbounded;
+      use type HTTP.Statuses;
    begin
-      if Item.Complete then
-         declare
-            use Ada.Streams;
-            Data   : Streams.Memory.Instance := Item.Data.Copy;
-            Buffer : Stream_Element_Array (1 .. 10_000);
-            Last   : Stream_Element_Offset;
-         begin
-            loop
-               Data.Read (Buffer, Last);
-               Stream.Write (Buffer (Buffer'First .. Last));
-               exit when Last < Buffer'Last;
-            end loop;
-         end;
-      else
+      if Length (Item.Content) > 0 and Length (Item.Content_Type) = 0 then
          raise Constraint_Error
-           with "Response object is not ready to be streamed.";
+           with "Response object is not ready to be streamed.  " &
+                "No content-type provided for content.";
+      elsif Item.Status = HTTP.Moved_Permanently and then
+              Length (Item.Location) = 0 then
+         raise Constraint_Error
+           with "Response object is not ready to be streamed.  " &
+                "No location provided for redirection.";
+      elsif Item.Status = HTTP.Moved_Temporarily and then
+              Length (Item.Location) = 0 then
+         raise Constraint_Error
+           with "Response object is not ready to be streamed.  " &
+                "No location provided for redirection.";
+      else
+         declare
+            use Text_IO;
+         begin
+            Put_Line (Stream, HTTP.Status_Line (Item.Status));
+
+            Put      (Stream, "Content-Length: ");
+            Put_Line (Stream, Length (Item.Content));
+
+            if Length (Item.Content) > 0 then
+               Put      (Stream, "Content-Type: ");
+               Put_Line (Stream, Item.Content_Type);
+            end if;
+
+            case Item.Status is
+               when HTTP.Switching_Protocols =>
+                  Put_Line (Stream, "Upgrade: websocket");
+                  Put_Line (Stream, "Connection: Upgrade");
+                  Put      (Stream, "Sec-WebSocket-Accept: ");
+                  Put_Line (Stream, String (Item.Websocket_Accept));
+               when HTTP.Moved_Permanently | HTTP.Moved_Temporarily =>
+                  Put      (Stream, "Location: ");
+                  Put_Line (Stream, Item.Location);
+               when others =>
+                  null;
+            end case;
+
+            New_Line (Stream);
+            Put      (Stream, Item.Content);
+         end;
       end if;
    end Output_HTTP;
 
    function Redirect (Target    : in String;
                       Permanent : in Boolean)
                      return Class is
-      use Text_IO;
+      use Ada.Strings.Unbounded;
    begin
-      return R : Instance do
-         if Permanent then
-            Put_Line (R.Data'Access, Constants.Moved_Permanently);
-         else
-            Put_Line (R.Data'Access, Constants.Moved_Temporarily);
-         end if;
-
-         Put_Line (R.Data'Access, "Location: " & Target);
-         Put_Line (R.Data'Access, "Content-Length: 0");
-         New_Line (R.Data'Access);
-
-         R.Complete := True;
-      end return;
+      if Permanent then
+         return Instance'(Status       => HTTP.Moved_Permanently,
+                          Content_Type => <>,
+                          Content      => <>,
+                          Location     => To_Unbounded_String (Target));
+      else
+         return Instance'(Status => HTTP.Moved_Temporarily,
+                          Content_Type => <>,
+                          Content      => <>,
+                          Location     => To_Unbounded_String (Target));
+      end if;
    end Redirect;
 
    function Switch_To_Websocket (Key : in String) return Class is
-      function Accept_Key return String;
+      function Accept_Key return HTTP.Websocket_Accept_Key;
       function To_Storage_Elements
                  (Hex : in String)
                  return System.Storage_Elements.Storage_Array;
       function Base64 (Octets : in System.Storage_Elements.Storage_Array)
                       return String;
 
-      function Accept_Key return String is
+      function Accept_Key return HTTP.Websocket_Accept_Key is
          use GNAT.SHA1;
          Hash : Context := Initial_Context;
       begin
          Update (Hash, Key);
          Update (Hash, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-         return Base64 (To_Storage_Elements (Digest (Hash)));
+         return HTTP.Websocket_Accept_Key
+                  (Base64 (To_Storage_Elements (Digest (Hash))));
       end Accept_Key;
 
       function Base64 (Octets : in System.Storage_Elements.Storage_Array)
@@ -212,14 +282,9 @@ package body Black.Response is
 
       use Text_IO;
    begin
-      return R : Instance do
-         Put_Line (R.Data'Access, Constants.Switching_Protocols);
-         Put_Line (R.Data'Access, "Upgrade: websocket");
-         Put_Line (R.Data'Access, "Connection: Upgrade");
-         Put_Line (R.Data'Access, "Sec-WebSocket-Accept: " & Accept_Key);
-         New_Line (R.Data'Access);
-
-         R.Complete := True;
-      end return;
+      return Instance'(Status           => HTTP.Switching_Protocols,
+                       Content_Type     => <>,
+                       Content          => <>,
+                       Websocket_Accept => Accept_Key);
    end Switch_To_Websocket;
 end Black.Response;
