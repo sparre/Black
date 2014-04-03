@@ -29,8 +29,6 @@ package Black.Request is
    function Want_Websocket (Request : in Instance) return Boolean;
    function Websocket_Key  (Request : in Instance) return String;
 
-   Protocol_Error : exception;
-
    function Parse_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance;
