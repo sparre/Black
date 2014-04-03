@@ -18,8 +18,8 @@ package body Black.Tests.Memory_Streams is
       Input    : constant Class  := OK (Message);
       Expected : constant array (1 .. 5) of Unbounded_String :=
         (+"HTTP/1.1 200 OK",
-         +"Content-Type: text/plain; charset=iso-8859-1",
          +"Content-Length:" & Natural'Image (Message'Length),
+         +"Content-Type: text/plain; charset=iso-8859-1",
          +"",
          +Message);
    begin
