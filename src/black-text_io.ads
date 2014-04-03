@@ -7,9 +7,18 @@ package Black.Text_IO is
    procedure Put
      (Target : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     String);
+   procedure Put
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Ada.Strings.Unbounded.Unbounded_String);
    procedure Put_Line
      (Target : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     String);
+   procedure Put_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Ada.Strings.Unbounded.Unbounded_String);
+   procedure Put_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Integer);
    procedure New_Line
      (Target : not null access Ada.Streams.Root_Stream_Type'Class);
 

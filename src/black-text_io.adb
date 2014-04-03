@@ -1,6 +1,8 @@
 with
   Ada.Characters.Latin_1,
-  Ada.IO_Exceptions;
+  Ada.IO_Exceptions,
+  Ada.Strings,
+  Ada.Strings.Fixed;
 
 package body Black.Text_IO is
    function Get_Line
@@ -55,6 +57,14 @@ package body Black.Text_IO is
       String'Write (Target, Item);
    end Put;
 
+   procedure Put
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Ada.Strings.Unbounded.Unbounded_String) is
+   begin
+      Put (Target => Target,
+           Item   => Ada.Strings.Unbounded.To_String (Item));
+   end Put;
+
    procedure Put_Line
      (Target : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     String) is
@@ -62,5 +72,22 @@ package body Black.Text_IO is
       Put (Target => Target,
            Item   => Item &
                      Ada.Characters.Latin_1.CR & Ada.Characters.Latin_1.LF);
+   end Put_Line;
+
+   procedure Put_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Ada.Strings.Unbounded.Unbounded_String) is
+   begin
+      Put_Line (Target => Target,
+                Item   => Ada.Strings.Unbounded.To_String (Item));
+   end Put_Line;
+
+   procedure Put_Line
+     (Target : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Integer) is
+      use Ada.Strings, Ada.Strings.Fixed;
+   begin
+      Put_Line (Target => Target,
+                Item   => Trim (Integer'Image (Item), Both));
    end Put_Line;
 end Black.Text_IO;
