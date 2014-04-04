@@ -190,7 +190,9 @@ package body Black.Request is
       Second_Space : constant Natural := Index (Line, " ", First_Space + 1);
    begin
       if Second_Space = 0 then
-         raise Protocol_Error;
+         raise Protocol_Error
+	   with """" & To_String (Line) & """ only contains a single space. " &
+	        "Expected format: <method> <resource> HTTP/1.1";
       else
          Parse_Method :
          declare
