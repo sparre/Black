@@ -7,7 +7,8 @@ project Black is
                         "libesl/src/");
 
    for Main use ("black-request",
-		 "black-response");
+		 "black-response",
+		 "black-streams-memory");
 
    package Builder  renames Ada_2005.Builder;
    package Compiler renames Ada_2005.Compiler;
