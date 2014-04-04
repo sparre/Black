@@ -191,8 +191,8 @@ package body Black.Request is
    begin
       if Second_Space = 0 then
          raise Protocol_Error
-	   with """" & To_String (Line) & """ only contains a single space. " &
-	        "Expected format: <method> <resource> HTTP/1.1";
+           with """" & To_String (Line) & """ only contains a single space. " &
+                "Expected format: <method> <resource> HTTP/1.1";
       else
          Parse_Method :
          declare
