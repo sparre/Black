@@ -75,7 +75,10 @@ package body Black.Tests.Request is
                                         Resource => "/events/2"),
             6 => Black.Request.Compose (Method   => HTTP.Options,
                                         Host     => "ada-dk.org",
-                                        Resource => "/events"));
+                                        Resource => "/events"),
+            7 => Black.Request.Websocket (Host     => "ada-dk.org",
+                                          Resource => "/events",
+                                          Key      => "dead=abba=beef"));
       Buffer   : aliased Black.Streams.Memory.Instance;
       Got      : Black.Request.Instance;
    begin

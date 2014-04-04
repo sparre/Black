@@ -299,6 +299,21 @@ package body Black.Request is
       end if;
    end Want_Websocket;
 
+   function Websocket (Host     : in String;
+                       Resource : in String;
+                       Key      : in String) return Instance is
+      use Ada.Strings.Unbounded;
+   begin
+      return (Blank             => False,
+              Host              => To_Unbounded_String (Host),
+              Resource          => To_Unbounded_String (Resource),
+              Method            => HTTP.Get,
+              Parameters        => <>,
+              Websocket         => True,
+              Has_Websocket_Key => True,
+              Websocket_Key     => To_Unbounded_String (Key));
+   end Websocket;
+
    function Websocket_Key  (Request : in Instance) return String is
    begin
       if Request.Blank then

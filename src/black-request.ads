@@ -42,6 +42,9 @@ package Black.Request is
    function Compose (Method   : in HTTP.Methods;
                      Host     : in String;
                      Resource : in String) return Instance;
+   function Websocket (Host     : in String;
+                       Resource : in String;
+                       Key      : in String) return Instance;
 private
    procedure Parse_Method_And_Resource
      (Request : in out Instance;
