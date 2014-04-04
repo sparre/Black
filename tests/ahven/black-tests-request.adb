@@ -63,7 +63,19 @@ package body Black.Tests.Request is
                                         Resource => "/Transport/Biler/"),
             2 => Black.Request.Compose (Method   => HTTP.Get,
                                         Host     => "ada-dk.org",
-                                        Resource => "/"));
+                                        Resource => "/"),
+            3 => Black.Request.Compose (Method   => HTTP.Put,
+                                        Host     => "ada-dk.org",
+                                        Resource => "/events"),
+            4 => Black.Request.Compose (Method   => HTTP.Delete,
+                                        Host     => "ada-dk.org",
+                                        Resource => "/events/3"),
+            5 => Black.Request.Compose (Method   => HTTP.Post,
+                                        Host     => "ada-dk.org",
+                                        Resource => "/events/2"),
+            6 => Black.Request.Compose (Method   => HTTP.Options,
+                                        Host     => "ada-dk.org",
+                                        Resource => "/events"));
       Buffer   : aliased Black.Streams.Memory.Instance;
       Got      : Black.Request.Instance;
    begin
