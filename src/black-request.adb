@@ -34,6 +34,9 @@ package body Black.Request is
       elsif Length (Item.Host) = 0 then
          raise Constraint_Error
            with "Request does not contain a host name.";
+      elsif Item.Websocket and not Item.Has_Websocket_Key then
+         raise Constraint_Error
+           with "Request is not ready for transmission: No websocket key.";
       else
          Put      (Stream, HTTP.Methods'Image (Item.Method));
          Put      (Stream, " ");
@@ -45,8 +48,11 @@ package body Black.Request is
          Put_Line (Stream, Item.Host);
 
          if Item.Websocket then
-            raise Program_Error
-              with "Websocket requests not implemented yet.";
+            Put_Line (Stream, "Upgrade: websocket");
+            Put_Line (Stream, "Connection: Upgrade");
+
+            Put      (Stream, "Sec-Websocket-Key: ");
+            Put_Line (Stream, Item.Websocket_Key);
          end if;
 
          New_Line (Stream);
