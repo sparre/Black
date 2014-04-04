@@ -22,6 +22,37 @@ package body Black.Request is
               Websocket_Key     => <>);
    end Compose;
 
+   procedure Generate_HTTP
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Instance) is
+      use Ada.Strings.Unbounded;
+      use Text_IO;
+   begin
+      if Item.Blank then
+         raise Constraint_Error
+           with "Request is not ready for transmission.";
+      elsif Length (Item.Host) = 0 then
+         raise Constraint_Error
+           with "Request does not contain a host name.";
+      else
+         Put      (Stream, HTTP.Methods'Image (Item.Method));
+         Put      (Stream, " ");
+         Put      (Stream, Item.Resource);
+         Put      (Stream, " ");
+         Put_Line (Stream, HTTP.Version);
+
+         Put      (Stream, "Host: ");
+         Put_Line (Stream, Item.Host);
+
+         if Item.Websocket then
+            raise Program_Error
+              with "Websocket requests not implemented yet.";
+         end if;
+
+         New_Line (Stream);
+      end if;
+   end Generate_HTTP;
+
    function Has_Parameter (Request : in Instance;
                            Key     : in String) return Boolean is
       use Ada.Strings.Unbounded;

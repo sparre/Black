@@ -32,6 +32,9 @@ package Black.Request is
    function Want_Websocket (Request : in Instance) return Boolean;
    function Websocket_Key  (Request : in Instance) return String;
 
+   procedure Generate_HTTP
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Instance);
    function Parse_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance;
@@ -46,7 +49,8 @@ private
    procedure Parse (Request : in out Instance;
                     Line    : in     Black.Parsing.Header_Line);
 
-   for Instance'Input use Parse_HTTP;
+   for Instance'Output use Generate_HTTP;
+   for Instance'Input  use Parse_HTTP;
 
    type Instance is tagged
       record
