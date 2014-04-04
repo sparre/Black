@@ -6,7 +6,8 @@ with
 with
   Black.HTTP,
   Black.Parameter.Vectors,
-  Black.Request;
+  Black.Request,
+  Black.Streams.Memory;
 
 package body Black.Tests.Request is
    generic
@@ -53,6 +54,29 @@ package body Black.Tests.Request is
          return To_String (Buffer);
       end if;
    end Image;
+
+   procedure Output_Input_Test is
+      use type Black.Request.Instance;
+      Examples : constant array (Positive range <>) of Black.Request.Instance
+        := (1 => Black.Request.Compose (Method   => HTTP.Get,
+                                        Host     => "lego.sparre-andersen.dk",
+                                        Resource => "/Transport/Biler/"),
+            2 => Black.Request.Compose (Method   => HTTP.Get,
+                                        Host     => "ada-dk.org",
+                                        Resource => "/"));
+      Buffer   : aliased Black.Streams.Memory.Instance;
+      Got      : Black.Request.Instance;
+   begin
+      for Index in Examples'Range loop
+         Black.Request.Instance'Output (Buffer'Access,
+                                        Examples (Index));
+         Got := Black.Request.Instance'Input (Buffer'Access);
+
+         Ahven.Assert
+           (Condition => Examples (Index) = Got,
+            Message   => "Mismatch in example" & Positive'Image (Index) & ".");
+      end loop;
+   end Output_Input_Test;
 
    procedure Parser_Test is
       use Ada.Streams.Stream_IO;
@@ -179,11 +203,12 @@ package body Black.Tests.Request is
    begin
       T.Set_Name ("HTTP Requests");
 
-      Add_Test_Routine (T, Example_1'Access, "Request parser (example 1 - get)");
-      Add_Test_Routine (T, Example_2'Access, "Request parser (example 2 - get)");
-      Add_Test_Routine (T, Example_3'Access, "Request parser (example 3 - get)");
-      Add_Test_Routine (T, Example_4'Access, "Request parser (example 4 - get)");
-      Add_Test_Routine (T, Example_5'Access, "Request parser (example 5 - get)");
-      Add_Test_Routine (T, Example_6'Access, "Request parser (example 6 - websocket)");
+      Add_Test_Routine (T, Example_1'Access,         "Request parser (example 1 - get)");
+      Add_Test_Routine (T, Example_2'Access,         "Request parser (example 2 - get)");
+      Add_Test_Routine (T, Example_3'Access,         "Request parser (example 3 - get)");
+      Add_Test_Routine (T, Example_4'Access,         "Request parser (example 4 - get)");
+      Add_Test_Routine (T, Example_5'Access,         "Request parser (example 5 - get)");
+      Add_Test_Routine (T, Example_6'Access,         "Request parser (example 6 - websocket)");
+      Add_Test_Routine (T, Output_Input_Test'Access, "Output->input filter");
    end Initialize;
 end Black.Tests.Request;

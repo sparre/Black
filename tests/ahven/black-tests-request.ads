@@ -6,4 +6,6 @@ package Black.Tests.Request is
 
    overriding
    procedure Initialize (T : in out Test);
+private
+   procedure Output_Input_Test;
 end Black.Tests.Request;
