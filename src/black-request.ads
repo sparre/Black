@@ -29,6 +29,9 @@ package Black.Request is
    function Parameter (Request : in Instance;
                        Key     : in String) return String;
 
+   function Has_Origin (Request : in Instance) return Boolean;
+   function Origin     (Request : in Instance) return String;
+
    function Want_Websocket (Request : in Instance) return Boolean;
    function Websocket_Key  (Request : in Instance) return String;
 
@@ -65,5 +68,6 @@ private
          Websocket         : Boolean := False;
          Has_Websocket_Key : Boolean := False;
          Websocket_Key     : Ada.Strings.Unbounded.Unbounded_String;
+         Origin            : Ada.Strings.Unbounded.Unbounded_String;
       end record;
 end Black.Request;

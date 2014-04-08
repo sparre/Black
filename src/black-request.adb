@@ -19,7 +19,8 @@ package body Black.Request is
               Parameters        => <>,
               Websocket         => False,
               Has_Websocket_Key => False,
-              Websocket_Key     => <>);
+              Websocket_Key     => <>,
+              Origin            => <>);
    end Compose;
 
    procedure Generate_HTTP
@@ -55,9 +56,19 @@ package body Black.Request is
             Put_Line (Stream, Item.Websocket_Key);
          end if;
 
+         if Item.Has_Origin then
+            Put      (Stream, "Origin: ");
+            Put_Line (Stream, Item.Origin);
+         end if;
+
          New_Line (Stream);
       end if;
    end Generate_HTTP;
+
+   function Has_Origin (Request : in Instance) return Boolean is
+   begin
+      return Ada.Strings.Unbounded.Length (Request.Origin) > 0;
+   end Has_Origin;
 
    function Has_Parameter (Request : in Instance;
                            Key     : in String) return Boolean is
@@ -94,6 +105,17 @@ package body Black.Request is
          return Request.Method;
       end if;
    end Method;
+
+   function Origin (Request : in Instance) return String is
+   begin
+      if Request.Blank then
+         raise Constraint_Error with "Request is blank.";
+      elsif Has_Origin (Request) then
+         return Ada.Strings.Unbounded.To_String (Request.Origin);
+      else
+         raise Constraint_Error with "Request has no origin.";
+      end if;
+   end Origin;
 
    function Parameter (Request : in Instance;
                        Key     : in String;
@@ -151,6 +173,8 @@ package body Black.Request is
       elsif Line.Key = "Sec-Websocket-Key" then
          Request.Websocket_Key := Line.Value;
          Request.Has_Websocket_Key := True;
+      elsif Line.Key = "Origin" then
+         Request.Origin := Line.Value;
       end if;
    end Parse;
 
@@ -317,7 +341,8 @@ package body Black.Request is
               Parameters        => <>,
               Websocket         => True,
               Has_Websocket_Key => True,
-              Websocket_Key     => To_Unbounded_String (Key));
+              Websocket_Key     => To_Unbounded_String (Key),
+              Origin            => <>);
    end Websocket;
 
    function Websocket_Key  (Request : in Instance) return String is
