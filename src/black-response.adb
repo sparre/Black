@@ -10,11 +10,11 @@ with
   Black.Text_IO;
 
 package body Black.Response is
-   function Parse (Item : in String) return Access_Control.HTTP_Status_Set;
+   function Parse (Item : in String) return Access_Control.HTTP_Method_Set;
 
    procedure Put_Line
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : in     Access_Control.HTTP_Status_Set);
+      Item   : in     Access_Control.HTTP_Method_Set);
    procedure Put_Line
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     Access_Controls);
@@ -186,12 +186,12 @@ package body Black.Response is
       end if;
    end Output_HTTP;
 
-   function Parse (Item : in String) return Access_Control.HTTP_Status_Set is
+   function Parse (Item : in String) return Access_Control.HTTP_Method_Set is
       use Ada.Strings, Ada.Strings.Fixed;
       From : Integer;
       To   : Natural := Item'First - 1;
    begin
-      return Result : Access_Control.HTTP_Status_Set := (others => False) do
+      return Result : Access_Control.HTTP_Method_Set := (others => False) do
          loop
             From := To + 1;
             exit when not (From in Item'Range);
@@ -203,9 +203,9 @@ package body Black.Response is
 
             declare
                Name   : String renames Trim (Item (From .. To - 1), Both);
-               Status : HTTP.Statuses renames HTTP.Statuses'Value (Name);
+               Method : HTTP.Methods renames HTTP.Methods'Value (Name);
             begin
-               Result (Status) := True;
+               Result (Method) := True;
             end;
          end loop;
       end return;
@@ -217,17 +217,17 @@ package body Black.Response is
 
    procedure Put_Line
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
-      Item   : in     Access_Control.HTTP_Status_Set) is
+      Item   : in     Access_Control.HTTP_Method_Set) is
       First : Boolean := True;
    begin
-      for Status in Item'Range loop
-         if Item (Status) then
+      for Method in Item'Range loop
+         if Item (Method) then
             if not First then
                Text_IO.Put (Target => Stream,
                             Item   => ", ");
             end if;
             Text_IO.Put (Target => Stream,
-                         Item   => HTTP.Statuses'Image (Status));
+                         Item   => HTTP.Methods'Image (Method));
             First := False;
          end if;
       end loop;
@@ -239,9 +239,9 @@ package body Black.Response is
       Item   : in     Access_Controls) is
       use Ada.Strings.Unbounded;
       use Text_IO;
-      No_Headers : constant Access_Control.HTTP_Status_Set :=
+      No_Headers : constant Access_Control.HTTP_Method_Set :=
                      (others => False);
-      use type Access_Control.HTTP_Status_Set;
+      use type Access_Control.HTTP_Method_Set;
    begin
       if Length (Item.Allow_Origin) > 0 then
          Put      (Stream, "Access-Control-Allow-Origin: ");
@@ -404,7 +404,7 @@ package body Black.Response is
       end Allow_Credentials;
 
       procedure Allow_Headers (Item    : in out Class;
-                               Headers : in     HTTP_Status_Set) is
+                               Headers : in     HTTP_Method_Set) is
       begin
          Item.Access_Control.Allow_Headers := Headers;
       end Allow_Headers;
