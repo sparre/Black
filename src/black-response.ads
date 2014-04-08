@@ -1,12 +1,11 @@
 with
   Ada.Streams;
+with
+  Black.HTTP;
 
 private
 with
   Ada.Strings.Unbounded;
-private
-with
-  Black.HTTP;
 
 package Black.Response is
    type Instance (<>) is tagged private;
@@ -41,11 +40,53 @@ package Black.Response is
    for Instance'Output       use Output_HTTP;
    for Instance'Input        use Input_HTTP;
    for Instance'Class'Output use Output;
+
+   package Access_Control is
+      type HTTP_Status_Set is array (HTTP.Statuses) of Boolean;
+
+      procedure Allow_Origin (Item    : in out Class;
+                              Pattern : in     String);
+      procedure Allow_Credentials (Item : in out Class);
+      procedure Allow_Headers (Item    : in out Class;
+                               Headers : in     HTTP_Status_Set);
+      procedure Max_Age (Item : in out Class;
+                         Age  : in     Duration);
+   end Access_Control;
 private
+   type Optional_Boolean (Set : Boolean := False) is
+      record
+         case Set is
+            when True =>
+               Value : Boolean;
+            when False =>
+               null;
+         end case;
+      end record;
+
+   type Optional_Duration (Set : Boolean := False) is
+      record
+         case Set is
+            when True =>
+               Value : Duration;
+            when False =>
+               null;
+         end case;
+      end record;
+
+   type Access_Controls is
+      record
+         Allow_Origin      : Ada.Strings.Unbounded.Unbounded_String;
+         Allow_Credentials : Optional_Boolean;
+         Allow_Headers     : Access_Control.HTTP_Status_Set :=
+                               (others => False);
+         Max_Age           : Optional_Duration;
+      end record;
+
    type Instance (Status : HTTP.Statuses) is tagged
       record
-         Content_Type : Ada.Strings.Unbounded.Unbounded_String;
-         Content      : Ada.Strings.Unbounded.Unbounded_String;
+         Content_Type   : Ada.Strings.Unbounded.Unbounded_String;
+         Content        : Ada.Strings.Unbounded.Unbounded_String;
+         Access_Control : Access_Controls;
 
          case Status is
             when HTTP.Switching_Protocols =>

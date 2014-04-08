@@ -1,5 +1,6 @@
 with
-  Ada.IO_Exceptions;
+  Ada.IO_Exceptions,
+  Ada.Strings.Fixed;
 with
   System.Storage_Elements;
 with
@@ -9,6 +10,15 @@ with
   Black.Text_IO;
 
 package body Black.Response is
+   function Parse (Item : in String) return Access_Control.HTTP_Status_Set;
+
+   procedure Put_Line
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Access_Control.HTTP_Status_Set);
+   procedure Put_Line
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Access_Controls);
+
    function Input_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance is
@@ -40,6 +50,16 @@ package body Black.Response is
             elsif Line.Key = "Sec-Websocket-Accept" then
                R.Websocket_Accept :=
                  HTTP.Websocket_Accept_Key (String'(Line.Value));
+            elsif Line.Key = "Access-Control-Allow-Origin" then
+               R.Access_Control.Allow_Origin := Line.Value;
+            elsif Line.Key = "Access-Control-Allow-Credentials" then
+               R.Access_Control.Allow_Credentials := (Set   => True,
+                                                      Value => Line.Value);
+            elsif Line.Key = "Access-Control-Allow-Headers" then
+               R.Access_Control.Allow_Headers := Parse (Line.Value);
+            elsif Line.Key = "Access-Control-Max-Age" then
+               R.Access_Control.Max_Age := (Set   => True,
+                                            Value => Line.Value);
             end if;
          end loop;
 
@@ -72,10 +92,11 @@ package body Black.Response is
       Message : constant String := "The requested resource, '" & Resource &
                                    "' was not found on the server.";
    begin
-      return Instance'(Status       => HTTP.Not_Found,
-                       Content_Type => To_Unbounded_String
-                                         ("text/plain; charset=iso-8859-1"),
-                       Content      => To_Unbounded_String (Message));
+      return Instance'(Status         => HTTP.Not_Found,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Message),
+                       Access_Control => <>);
    end Not_Found;
 
    function OK (Content_Type : in String;
@@ -86,18 +107,20 @@ package body Black.Response is
       Buffer : String (1 .. Data'Length);
       for Buffer'Address use Data'Address;
    begin
-      return Instance'(Status       => HTTP.OK,
-                       Content_Type => To_Unbounded_String (Content_Type),
-                       Content      => To_Unbounded_String (Buffer));
+      return Instance'(Status         => HTTP.OK,
+                       Content_Type   => To_Unbounded_String (Content_Type),
+                       Content        => To_Unbounded_String (Buffer),
+                       Access_Control => <>);
    end OK;
 
    function OK (Data : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
-      return Instance'(Status       => HTTP.OK,
-                       Content_Type => To_Unbounded_String
-                                         ("text/plain; charset=iso-8859-1"),
-                       Content      => To_Unbounded_String (Data));
+      return Instance'(Status         => HTTP.OK,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Data),
+                       Access_Control => <>);
    end OK;
 
    procedure Output
@@ -154,11 +177,92 @@ package body Black.Response is
                   null;
             end case;
 
+            Put_Line (Stream, Item.Access_Control);
+
             New_Line (Stream);
             Put      (Stream, Item.Content);
          end;
       end if;
    end Output_HTTP;
+
+   function Parse (Item : in String) return Access_Control.HTTP_Status_Set is
+      use Ada.Strings, Ada.Strings.Fixed;
+      From : Integer;
+      To   : Natural := Item'First - 1;
+   begin
+      return Result : Access_Control.HTTP_Status_Set := (others => False) do
+         loop
+            From := To + 1;
+            exit when not (From in Item'Range);
+
+            To := Index (Item (From .. Item'Last), ",");
+            if To = 0 then
+               To := Item'Last + 1;
+            end if;
+
+            declare
+               Name   : String renames Trim (Item (From .. To - 1), Both);
+               Status : HTTP.Statuses renames HTTP.Statuses'Value (Name);
+            begin
+               Result (Status) := True;
+            end;
+         end loop;
+      end return;
+   exception
+      when others =>
+         raise Protocol_Error
+           with "Could not parse Access-Control-Allow-Methods value.";
+   end Parse;
+
+   procedure Put_Line
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Access_Control.HTTP_Status_Set) is
+      First : Boolean := True;
+   begin
+      for Status in Item'Range loop
+         if Item (Status) then
+            if not First then
+               Text_IO.Put (Target => Stream,
+                            Item   => ", ");
+            end if;
+            Text_IO.Put (Target => Stream,
+                         Item   => HTTP.Statuses'Image (Status));
+            First := False;
+         end if;
+      end loop;
+      Text_IO.New_Line (Target => Stream);
+   end Put_Line;
+
+   procedure Put_Line
+     (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
+      Item   : in     Access_Controls) is
+      use Ada.Strings.Unbounded;
+      use Text_IO;
+      No_Headers : constant Access_Control.HTTP_Status_Set :=
+                     (others => False);
+      use type Access_Control.HTTP_Status_Set;
+   begin
+      if Length (Item.Allow_Origin) > 0 then
+         Put      (Stream, "Access-Control-Allow-Origin: ");
+         Put_Line (Stream, Item.Allow_Origin);
+      end if;
+
+      if Item.Allow_Credentials.Set then
+         Put      (Stream, "Access-Control-Allow-Credentials: ");
+         Put_Line (Stream, Item.Allow_Credentials.Value);
+      end if;
+
+      if Item.Allow_Headers /= No_Headers then
+         Put      (Stream, "Access-Control-Allow-Headers: ");
+         Put_Line (Stream, Item.Allow_Headers);
+      end if;
+
+      if Item.Max_Age.Set then
+         Put      (Stream, "Access-Control-Max-Age: ");
+         Put_Line (Stream, Item.Max_Age.Value);
+      end if;
+
+   end Put_Line;
 
    function Redirect (Target    : in String;
                       Permanent : in Boolean)
@@ -166,15 +270,17 @@ package body Black.Response is
       use Ada.Strings.Unbounded;
    begin
       if Permanent then
-         return Instance'(Status       => HTTP.Moved_Permanently,
-                          Content_Type => <>,
-                          Content      => <>,
-                          Location     => To_Unbounded_String (Target));
+         return Instance'(Status         => HTTP.Moved_Permanently,
+                          Content_Type   => <>,
+                          Content        => <>,
+                          Access_Control => <>,
+                          Location       => To_Unbounded_String (Target));
       else
-         return Instance'(Status => HTTP.Moved_Temporarily,
-                          Content_Type => <>,
-                          Content      => <>,
-                          Location     => To_Unbounded_String (Target));
+         return Instance'(Status         => HTTP.Moved_Temporarily,
+                          Content_Type   => <>,
+                          Content        => <>,
+                          Access_Control => <>,
+                          Location       => To_Unbounded_String (Target));
       end if;
    end Redirect;
 
@@ -285,6 +391,35 @@ package body Black.Response is
       return Instance'(Status           => HTTP.Switching_Protocols,
                        Content_Type     => <>,
                        Content          => <>,
+                       Access_Control   => <>,
                        Websocket_Accept => Accept_Key);
    end Switch_To_Websocket;
+
+   package body Access_Control is
+      procedure Allow_Credentials (Item : in out Class) is
+      begin
+         Item.Access_Control.Allow_Credentials := (Set   => True,
+                                                   Value => True);
+      end Allow_Credentials;
+
+      procedure Allow_Headers (Item    : in out Class;
+                               Headers : in     HTTP_Status_Set) is
+      begin
+         Item.Access_Control.Allow_Headers := Headers;
+      end Allow_Headers;
+
+      procedure Allow_Origin (Item    : in out Class;
+                              Pattern : in     String) is
+         use Ada.Strings.Unbounded;
+      begin
+         Item.Access_Control.Allow_Origin := To_Unbounded_String (Pattern);
+      end Allow_Origin;
+
+      procedure Max_Age (Item : in out Class;
+                         Age  : in     Duration) is
+      begin
+         Item.Access_Control.Max_Age := (Set   => True,
+                                         Value => Age);
+      end Max_Age;
+   end Access_Control;
 end Black.Response;
