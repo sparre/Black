@@ -25,6 +25,8 @@ package Black.Parsing is
    function Value (Item : in Header_Line)
                   return Ada.Strings.Unbounded.Unbounded_String;
    function Value (Item : in Header_Line) return Integer;
+   function Value (Item : in Header_Line) return Boolean;
+   function Value (Item : in Header_Line) return Duration;
 private
    type Header is
       record

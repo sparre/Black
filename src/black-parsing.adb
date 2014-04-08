@@ -99,4 +99,14 @@ package body Black.Parsing is
    begin
       return Integer'Value (Item.Value);
    end Value;
+
+   function Value (Item : in Header_Line) return Boolean is
+   begin
+      return Boolean'Value (Item.Value);
+   end Value;
+
+   function Value (Item : in Header_Line) return Duration is
+   begin
+      return Duration'Value (Item.Value);
+   end Value;
 end Black.Parsing;
