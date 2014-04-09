@@ -23,6 +23,8 @@ package Black.Response is
 
    function Not_Found (Resource : in String) return Class;
 
+   function Server_Error (Data : in String) return Class;
+
    function Switch_To_Websocket (Key : in String) return Class;
 
    procedure Output_HTTP

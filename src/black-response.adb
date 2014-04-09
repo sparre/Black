@@ -285,6 +285,16 @@ package body Black.Response is
       end if;
    end Redirect;
 
+   function Server_Error (Data : in String) return Class is
+      use Ada.Strings.Unbounded;
+   begin
+      return Instance'(Status         => HTTP.Server_Error,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Data),
+                       Access_Control => <>);
+   end Server_Error;
+
    function Switch_To_Websocket (Key : in String) return Class is
       function Accept_Key return HTTP.Websocket_Accept_Key;
       function To_Storage_Elements
