@@ -19,6 +19,16 @@ package body Black.Response is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     Access_Controls);
 
+   function Bad_Request (Message : in String) return Class is
+      use Ada.Strings.Unbounded;
+   begin
+      return Instance'(Status         => HTTP.Bad_Request,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Message),
+                       Access_Control => <>);
+   end Bad_Request;
+
    function Content (Response : in Instance) return String is
    begin
       --  TODO: Ought to raise a constraint error, if the content type
@@ -30,6 +40,16 @@ package body Black.Response is
    begin
       return Ada.Strings.Unbounded.To_String (Response.Content_Type);
    end Content_Type;
+
+   function Forbidden (Message : in String) return Class is
+      use Ada.Strings.Unbounded;
+   begin
+      return Instance'(Status         => HTTP.Forbidden,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Message),
+                       Access_Control => <>);
+   end Forbidden;
 
    function Input_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
@@ -99,6 +119,14 @@ package body Black.Response is
          end if;
       end return;
    end Input_HTTP;
+
+   function No_Content return Class is
+   begin
+      return Instance'(Status         => HTTP.No_Content,
+                       Content_Type   => <>,
+                       Content        => <>,
+                       Access_Control => <>);
+   end No_Content;
 
    function Not_Found (Resource : in String) return Class is
       use Ada.Strings.Unbounded;
@@ -422,6 +450,16 @@ package body Black.Response is
                        Access_Control   => <>,
                        Websocket_Accept => Accept_Key);
    end Switch_To_Websocket;
+
+   function Unauthorized (Message : in String) return Class is
+      use Ada.Strings.Unbounded;
+   begin
+      return Instance'(Status         => HTTP.Unauthorized,
+                       Content_Type   => To_Unbounded_String
+                                           ("text/plain; charset=iso-8859-1"),
+                       Content        => To_Unbounded_String (Message),
+                       Access_Control => <>);
+   end Unauthorized;
 
    package body Access_Control is
       procedure Allow_Credentials (Item : in out Class) is

@@ -11,9 +11,7 @@ package Black.Response is
    type Instance (<>) is tagged private;
    subtype Class is Instance'Class;
 
-   function Redirect (Target    : in String;
-                      Permanent : in Boolean)
-                     return Class;
+   function Switch_To_Websocket (Key : in String) return Class;
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
@@ -21,11 +19,21 @@ package Black.Response is
    function OK (Data : in String)
                return Class;
 
+   function No_Content return Class;
+
+   function Redirect (Target    : in String;
+                      Permanent : in Boolean)
+                     return Class;
+
+   function Bad_Request (Message : in String) return Class;
+
+   function Unauthorized (Message : in String) return Class;
+
+   function Forbidden (Message : in String) return Class;
+
    function Not_Found (Resource : in String) return Class;
 
    function Server_Error (Data : in String) return Class;
-
-   function Switch_To_Websocket (Key : in String) return Class;
 
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
