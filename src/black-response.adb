@@ -19,6 +19,18 @@ package body Black.Response is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     Access_Controls);
 
+   function Content (Response : in Instance) return String is
+   begin
+      --  TODO: Ought to raise a constraint error, if the content type
+      --  isn't text/plain.
+      return Ada.Strings.Unbounded.To_String (Response.Content);
+   end Content;
+
+   function Content_Type (Response : in Instance) return String is
+   begin
+      return Ada.Strings.Unbounded.To_String (Response.Content_Type);
+   end Content_Type;
+
    function Input_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance is
@@ -294,6 +306,11 @@ package body Black.Response is
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Server_Error;
+
+   function Status (Response : in Instance) return HTTP.Statuses is
+   begin
+      return Response.Status;
+   end Status;
 
    function Switch_To_Websocket (Key : in String) return Class is
       function Accept_Key return HTTP.Websocket_Accept_Key;

@@ -54,6 +54,10 @@ package Black.Response is
       procedure Max_Age (Item : in out Class;
                          Age  : in     Duration);
    end Access_Control;
+
+   function Status       (Response : in Instance) return HTTP.Statuses;
+   function Content_Type (Response : in Instance) return String;
+   function Content      (Response : in Instance) return String;
 private
    type Optional_Boolean (Set : Boolean := False) is
       record
