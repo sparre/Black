@@ -1,6 +1,7 @@
 package Black.MIME_Types is
    package Application is
       JSON : constant String := "application/json";
+      Raw  : constant String := "application/x-raw";
    end Application;
 
    package Text is
