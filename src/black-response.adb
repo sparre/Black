@@ -19,13 +19,13 @@ package body Black.Response is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     Access_Controls);
 
-   function Bad_Request (Message : in String) return Class is
+   function Bad_Request (Data : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Bad_Request,
                        Content_Type   => To_Unbounded_String
                                            ("text/plain; charset=iso-8859-1"),
-                       Content        => To_Unbounded_String (Message),
+                       Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Bad_Request;
 
@@ -41,13 +41,13 @@ package body Black.Response is
       return Ada.Strings.Unbounded.To_String (Response.Content_Type);
    end Content_Type;
 
-   function Forbidden (Message : in String) return Class is
+   function Forbidden (Data : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Forbidden,
                        Content_Type   => To_Unbounded_String
                                            ("text/plain; charset=iso-8859-1"),
-                       Content        => To_Unbounded_String (Message),
+                       Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Forbidden;
 
@@ -451,13 +451,13 @@ package body Black.Response is
                        Websocket_Accept => Accept_Key);
    end Switch_To_Websocket;
 
-   function Unauthorized (Message : in String) return Class is
+   function Unauthorized (Data : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Unauthorized,
                        Content_Type   => To_Unbounded_String
                                            ("text/plain; charset=iso-8859-1"),
-                       Content        => To_Unbounded_String (Message),
+                       Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Unauthorized;
 

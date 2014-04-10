@@ -25,11 +25,11 @@ package Black.Response is
                       Permanent : in Boolean)
                      return Class;
 
-   function Bad_Request (Message : in String) return Class;
+   function Bad_Request (Data : in String) return Class;
 
-   function Unauthorized (Message : in String) return Class;
+   function Unauthorized (Data : in String) return Class;
 
-   function Forbidden (Message : in String) return Class;
+   function Forbidden (Data : in String) return Class;
 
    function Not_Found (Resource : in String) return Class;
 
