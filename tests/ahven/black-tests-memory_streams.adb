@@ -15,7 +15,7 @@ package body Black.Tests.Memory_Streams is
 
       Buffer   : aliased Streams.Memory.Instance;
       Message  : constant String := "We are living in a yellow ...";
-      Input    : constant Class  := OK (Message);
+      Input    : constant Class  := OK (Data => Message);
       Expected : constant array (1 .. 5) of Unbounded_String :=
         (+"HTTP/1.1 200 OK",
          +"Content-Length:" & Natural'Image (Message'Length),

@@ -1,4 +1,7 @@
 with
+  Ada.Streams;
+with
+  Black.MIME_Types,
   Black.Response;
 
 package body Black.Tests.Response is
@@ -20,14 +23,15 @@ package body Black.Tests.Response is
    end Initialize;
 
    procedure Non_Text_Document is
+      Raw_Data : constant Ada.Streams.Stream_Element_Array :=  (1 => 65,
+                                                                2 => 67,
+                                                                3 => 68,
+                                                                4 => 67);
    begin
       declare
          O : Black.Response.Class :=
-               Black.Response.OK (Content_Type => "application/raw",
-                                  Data         => (1 => 65,
-                                                   2 => 67,
-                                                   3 => 68,
-                                                   4 => 67));
+               Black.Response.OK (Content_Type => MIME_Types.Application.Raw,
+                                  Data         => Raw_Data);
          pragma Unreferenced (O);
       begin
          null;
