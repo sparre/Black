@@ -1,7 +1,8 @@
 with
   Ada.Streams;
 with
-  Black.HTTP;
+  Black.HTTP,
+  Black.MIME_Types;
 
 private
 with
@@ -16,7 +17,8 @@ package Black.Response is
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
                return Class;
-   function OK (Data : in String)
+   function OK (Content_Type : in String := MIME_Types.Text.Plain;
+                Data         : in String)
                return Class;
 
    function No_Content return Class;
@@ -25,15 +27,21 @@ package Black.Response is
                       Permanent : in Boolean)
                      return Class;
 
-   function Bad_Request (Data : in String) return Class;
+   function Bad_Request (Content_Type : in String := MIME_Types.Text.Plain;
+                         Data         : in String) return Class;
 
-   function Unauthorized (Data : in String) return Class;
+   function Unauthorized (Content_Type : in String := MIME_Types.Text.Plain;
+                          Data         : in String) return Class;
 
-   function Forbidden (Data : in String) return Class;
+   function Forbidden (Content_Type : in String := MIME_Types.Text.Plain;
+                       Data         : in String) return Class;
 
    function Not_Found (Resource : in String) return Class;
+   function Not_Found (Content_Type : in String := MIME_Types.Text.Plain;
+                       Data         : in String) return Class;
 
-   function Server_Error (Data : in String) return Class;
+   function Server_Error (Content_Type : in String := MIME_Types.Text.Plain;
+                          Data         : in String) return Class;
 
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;

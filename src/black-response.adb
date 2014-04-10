@@ -19,12 +19,12 @@ package body Black.Response is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;
       Item   : in     Access_Controls);
 
-   function Bad_Request (Data : in String) return Class is
+   function Bad_Request (Content_Type : in String := MIME_Types.Text.Plain;
+                         Data         : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Bad_Request,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
+                       Content_Type   => To_Unbounded_String (Content_Type),
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Bad_Request;
@@ -41,12 +41,12 @@ package body Black.Response is
       return Ada.Strings.Unbounded.To_String (Response.Content_Type);
    end Content_Type;
 
-   function Forbidden (Data : in String) return Class is
+   function Forbidden (Content_Type : in String := MIME_Types.Text.Plain;
+                       Data         : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Forbidden,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
+                       Content_Type   => To_Unbounded_String (Content_Type),
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Forbidden;
@@ -129,14 +129,18 @@ package body Black.Response is
    end No_Content;
 
    function Not_Found (Resource : in String) return Class is
+   begin
+      return Not_Found (Data => "The requested resource, '" & Resource &
+                                 "' was not found on the server.");
+   end Not_Found;
+
+   function Not_Found (Content_Type : in String := MIME_Types.Text.Plain;
+                       Data         : in String) return Class is
       use Ada.Strings.Unbounded;
-      Message : constant String := "The requested resource, '" & Resource &
-                                   "' was not found on the server.";
    begin
       return Instance'(Status         => HTTP.Not_Found,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
-                       Content        => To_Unbounded_String (Message),
+                       Content_Type   => To_Unbounded_String (Content_Type),
+                       Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Not_Found;
 
@@ -154,12 +158,12 @@ package body Black.Response is
                        Access_Control => <>);
    end OK;
 
-   function OK (Data : in String) return Class is
+   function OK (Content_Type : in String := MIME_Types.Text.Plain;
+                Data         : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.OK,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
+                       Content_Type   => To_Unbounded_String (Content_Type),
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end OK;
@@ -325,12 +329,12 @@ package body Black.Response is
       end if;
    end Redirect;
 
-   function Server_Error (Data : in String) return Class is
+   function Server_Error (Content_Type : in String := MIME_Types.Text.Plain;
+                          Data         : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Server_Error,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
+                       Content_Type   => To_Unbounded_String (Content_Type),
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Server_Error;
@@ -451,12 +455,12 @@ package body Black.Response is
                        Websocket_Accept => Accept_Key);
    end Switch_To_Websocket;
 
-   function Unauthorized (Data : in String) return Class is
+   function Unauthorized (Content_Type : in String := MIME_Types.Text.Plain;
+                          Data         : in String) return Class is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Unauthorized,
-                       Content_Type   => To_Unbounded_String
-                                           ("text/plain; charset=iso-8859-1"),
+                       Content_Type   => To_Unbounded_String (Content_Type),
                        Content        => To_Unbounded_String (Data),
                        Access_Control => <>);
    end Unauthorized;
