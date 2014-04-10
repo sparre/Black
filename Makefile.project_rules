@@ -21,3 +21,5 @@ libesl-update: libesl
 	cd libesl && git pull
 	rm -f libesl/src/esl*.ad[sb]
 
+.PHONY: ahven-update libesl-update
+
