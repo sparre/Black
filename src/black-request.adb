@@ -12,15 +12,42 @@ package body Black.Request is
                      Resource : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
-      return (Blank             => False,
-              Method            => Method,
-              Host              => To_Unbounded_String (Host),
-              Resource          => To_Unbounded_String (Resource),
-              Parameters        => <>,
-              Websocket         => False,
-              Has_Websocket_Key => False,
-              Websocket_Key     => <>,
-              Origin            => <>);
+      return (Blank              => False,
+              Method             => Method,
+              Host               => To_Unbounded_String (Host),
+              Resource           => To_Unbounded_String (Resource),
+              Parameters         => <>,
+              Websocket          => False,
+              Has_Websocket_Key  => False,
+              Websocket_Key      => <>,
+              Origin             => <>,
+              Content            => <>,
+              Content_Type       => <>,
+              Has_Content_Length => False,
+              Content_Length     => <>);
+   end Compose;
+
+   function Compose (Method       : in HTTP.Methods;
+                     Host         : in String;
+                     Resource     : in String;
+                     Content      : in String;
+                     Content_Type : in String := MIME_Types.Text.Plain)
+                    return Instance is
+      use Ada.Strings.Unbounded;
+   begin
+      return (Blank              => False,
+              Method             => Method,
+              Host               => To_Unbounded_String (Host),
+              Resource           => To_Unbounded_String (Resource),
+              Parameters         => <>,
+              Websocket          => False,
+              Has_Websocket_Key  => False,
+              Websocket_Key      => <>,
+              Origin             => <>,
+              Content            => To_Unbounded_String (Content),
+              Content_Type       => To_Unbounded_String (Content_Type),
+              Has_Content_Length => True,
+              Content_Length     => Content'Length);
    end Compose;
 
    procedure Generate_HTTP
@@ -38,6 +65,15 @@ package body Black.Request is
       elsif Item.Websocket and not Item.Has_Websocket_Key then
          raise Constraint_Error
            with "Request is not ready for transmission: No websocket key.";
+      elsif Length (Item.Content) > 0 and Length (Item.Content_Type) = 0 then
+         raise Constraint_Error
+           with "Request is not ready for transmission: " &
+                "No MIME type declared for content.";
+      elsif Item.Has_Content_Length and then
+            Item.Content_Length /= Length (Item.Content) then
+         raise Constraint_Error
+           with "Request is not ready for transmission: " &
+                "Declared content length doesn't match actual content length.";
       else
          Put      (Stream, HTTP.Methods'Image (Item.Method));
          Put      (Stream, " ");
@@ -61,7 +97,15 @@ package body Black.Request is
             Put_Line (Stream, Item.Origin);
          end if;
 
+         if Length (Item.Content) > 0 then
+            Put      (Stream, "Content-Type: ");
+            Put_Line (Stream, Item.Content_Type);
+            Put      (Stream, "Content-Length: ");
+            Put_Line (Stream, Length (Item.Content));
+         end if;
+
          New_Line (Stream);
+         Put      (Stream, Item.Content);
       end if;
    end Generate_HTTP;
 
@@ -171,10 +215,15 @@ package body Black.Request is
       elsif Line.Key = "Upgrade" and Line.Value = "websocket" then
          Request.Websocket := True;
       elsif Line.Key = "Sec-Websocket-Key" then
-         Request.Websocket_Key := Line.Value;
+         Request.Websocket_Key     := Line.Value;
          Request.Has_Websocket_Key := True;
       elsif Line.Key = "Origin" then
          Request.Origin := Line.Value;
+      elsif Line.Key = "Content-Type" then
+         Request.Content_Type := Line.Value;
+      elsif Line.Key = "Content-Length" then
+         Request.Content_Length     := Line.Value;
+         Request.Has_Content_Length := True;
       end if;
    end Parse;
 
@@ -196,6 +245,11 @@ package body Black.Request is
             R.Parse (Line);
          end loop;
       end return;
+      
+      if R.Has_Content_Length and then R.Content_Length > 0 then
+	 raise Program_Error
+	   with "Parsing of request content not implemented yet.";
+      end if;
    end Parse_HTTP;
 
    procedure Parse_Method_And_Resource
@@ -334,15 +388,19 @@ package body Black.Request is
                        Key      : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
-      return (Blank             => False,
-              Host              => To_Unbounded_String (Host),
-              Resource          => To_Unbounded_String (Resource),
-              Method            => HTTP.Get,
-              Parameters        => <>,
-              Websocket         => True,
-              Has_Websocket_Key => True,
-              Websocket_Key     => To_Unbounded_String (Key),
-              Origin            => <>);
+      return (Blank              => False,
+              Host               => To_Unbounded_String (Host),
+              Resource           => To_Unbounded_String (Resource),
+              Method             => HTTP.Get,
+              Parameters         => <>,
+              Websocket          => True,
+              Has_Websocket_Key  => True,
+              Websocket_Key      => To_Unbounded_String (Key),
+              Origin             => <>,
+              Content            => <>,
+              Content_Type       => <>,
+              Has_Content_Length => False,
+              Content_Length     => <>);
    end Websocket;
 
    function Websocket_Key  (Request : in Instance) return String is
