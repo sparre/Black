@@ -20,7 +20,7 @@ package body Black.Response is
       Item   : in     Access_Controls);
 
    function Bad_Request (Content_Type : in String := MIME_Types.Text.Plain;
-                         Data         : in String) return Class is
+                         Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Bad_Request,
@@ -41,8 +41,67 @@ package body Black.Response is
       return Ada.Strings.Unbounded.To_String (Response.Content_Type);
    end Content_Type;
 
+   function Create (Status : HTTP.Statuses) return Instance is
+   begin
+      case Status is
+         when HTTP.Switching_Protocols =>
+            return Instance'(Status           => HTTP.Switching_Protocols,
+                             Content_Type     => <>,
+                             Content          => <>,
+                             Access_Control   => <>,
+                             Websocket_Accept => <>);
+         when HTTP.OK =>
+            return Instance'(Status         => HTTP.OK,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.No_Content =>
+            return Instance'(Status         => HTTP.No_Content,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Moved_Permanently =>
+            return Instance'(Status         => HTTP.Moved_Permanently,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>,
+                             Location       => <>);
+         when HTTP.Moved_Temporarily =>
+            return Instance'(Status         => HTTP.Moved_Temporarily,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>,
+                             Location       => <>);
+         when HTTP.Bad_Request =>
+            return Instance'(Status         => HTTP.Bad_Request,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Unauthorized =>
+            return Instance'(Status         => HTTP.Unauthorized,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Forbidden =>
+            return Instance'(Status         => HTTP.Forbidden,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Not_Found =>
+            return Instance'(Status         => HTTP.Not_Found,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Server_Error =>
+            return Instance'(Status         => HTTP.Server_Error,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+      end case;
+   end Create;
+
    function Forbidden (Content_Type : in String := MIME_Types.Text.Plain;
-                       Data         : in String) return Class is
+                       Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Forbidden,
@@ -120,7 +179,7 @@ package body Black.Response is
       end return;
    end Input_HTTP;
 
-   function No_Content return Class is
+   function No_Content return Instance is
    begin
       return Instance'(Status         => HTTP.No_Content,
                        Content_Type   => <>,
@@ -128,14 +187,14 @@ package body Black.Response is
                        Access_Control => <>);
    end No_Content;
 
-   function Not_Found (Resource : in String) return Class is
+   function Not_Found (Resource : in String) return Instance is
    begin
       return Not_Found (Data => "The requested resource, '" & Resource &
                                  "' was not found on the server.");
    end Not_Found;
 
    function Not_Found (Content_Type : in String := MIME_Types.Text.Plain;
-                       Data         : in String) return Class is
+                       Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Not_Found,
@@ -146,7 +205,7 @@ package body Black.Response is
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
-               return Class is
+               return Instance is
       use Ada.Strings.Unbounded;
       pragma Assert (Ada.Streams.Stream_Element'Size = Character'Size);
       Buffer : String (1 .. Data'Length);
@@ -159,7 +218,7 @@ package body Black.Response is
    end OK;
 
    function OK (Content_Type : in String := MIME_Types.Text.Plain;
-                Data         : in String) return Class is
+                Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.OK,
@@ -311,7 +370,7 @@ package body Black.Response is
 
    function Redirect (Target    : in String;
                       Permanent : in Boolean)
-                     return Class is
+                     return Instance is
       use Ada.Strings.Unbounded;
    begin
       if Permanent then
@@ -330,7 +389,7 @@ package body Black.Response is
    end Redirect;
 
    function Server_Error (Content_Type : in String := MIME_Types.Text.Plain;
-                          Data         : in String) return Class is
+                          Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Server_Error,
@@ -344,7 +403,7 @@ package body Black.Response is
       return Response.Status;
    end Status;
 
-   function Switch_To_Websocket (Key : in String) return Class is
+   function Switch_To_Websocket (Key : in String) return Instance is
       function Accept_Key return HTTP.Websocket_Accept_Key;
       function To_Storage_Elements
                  (Hex : in String)
@@ -456,7 +515,7 @@ package body Black.Response is
    end Switch_To_Websocket;
 
    function Unauthorized (Content_Type : in String := MIME_Types.Text.Plain;
-                          Data         : in String) return Class is
+                          Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.Unauthorized,

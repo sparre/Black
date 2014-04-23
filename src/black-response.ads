@@ -12,36 +12,38 @@ package Black.Response is
    type Instance (<>) is tagged private;
    subtype Class is Instance'Class;
 
-   function Switch_To_Websocket (Key : in String) return Class;
+   function Create (Status : HTTP.Statuses) return Instance;
+
+   function Switch_To_Websocket (Key : in String) return Instance;
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
-               return Class;
+               return Instance;
    function OK (Content_Type : in String := MIME_Types.Text.Plain;
                 Data         : in String)
-               return Class;
+               return Instance;
 
-   function No_Content return Class;
+   function No_Content return Instance;
 
    function Redirect (Target    : in String;
                       Permanent : in Boolean)
-                     return Class;
+                     return Instance;
 
    function Bad_Request (Content_Type : in String := MIME_Types.Text.Plain;
-                         Data         : in String) return Class;
+                         Data         : in String) return Instance;
 
    function Unauthorized (Content_Type : in String := MIME_Types.Text.Plain;
-                          Data         : in String) return Class;
+                          Data         : in String) return Instance;
 
    function Forbidden (Content_Type : in String := MIME_Types.Text.Plain;
-                       Data         : in String) return Class;
+                       Data         : in String) return Instance;
 
-   function Not_Found (Resource : in String) return Class;
+   function Not_Found (Resource : in String) return Instance;
    function Not_Found (Content_Type : in String := MIME_Types.Text.Plain;
-                       Data         : in String) return Class;
+                       Data         : in String) return Instance;
 
    function Server_Error (Content_Type : in String := MIME_Types.Text.Plain;
-                          Data         : in String) return Class;
+                          Data         : in String) return Instance;
 
    procedure Output_HTTP
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class;

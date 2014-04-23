@@ -2,6 +2,7 @@ with
   Ada.Streams;
 with
   Black.HTTP,
+  Black.MIME_Types,
   Black.Parameter,
   Black.Parameter.Vectors;
 
@@ -45,6 +46,12 @@ package Black.Request is
    function Compose (Method   : in HTTP.Methods;
                      Host     : in String;
                      Resource : in String) return Instance;
+   function Compose (Method       : in HTTP.Methods;
+                     Host         : in String;
+                     Resource     : in String;
+                     Content      : in String;
+                     Content_Type : in String := MIME_Types.Text.Plain)
+                    return Instance;
    function Websocket (Host     : in String;
                        Resource : in String;
                        Key      : in String) return Instance;
@@ -60,14 +67,18 @@ private
 
    type Instance is tagged
       record
-         Blank             : Boolean := True;
-         Host              : Ada.Strings.Unbounded.Unbounded_String;
-         Resource          : Ada.Strings.Unbounded.Unbounded_String;
-         Method            : Black.HTTP.Methods;
-         Parameters        : Black.Parameter.Vectors.Vector;
-         Websocket         : Boolean := False;
-         Has_Websocket_Key : Boolean := False;
-         Websocket_Key     : Ada.Strings.Unbounded.Unbounded_String;
-         Origin            : Ada.Strings.Unbounded.Unbounded_String;
+         Blank              : Boolean := True;
+         Host               : Ada.Strings.Unbounded.Unbounded_String;
+         Resource           : Ada.Strings.Unbounded.Unbounded_String;
+         Method             : Black.HTTP.Methods;
+         Parameters         : Black.Parameter.Vectors.Vector;
+         Websocket          : Boolean := False;
+         Has_Websocket_Key  : Boolean := False;
+         Websocket_Key      : Ada.Strings.Unbounded.Unbounded_String;
+         Origin             : Ada.Strings.Unbounded.Unbounded_String;
+         Content            : Ada.Strings.Unbounded.Unbounded_String;
+         Content_Type       : Ada.Strings.Unbounded.Unbounded_String;
+         Has_Content_Length : Boolean := False;
+         Content_Length     : Natural;
       end record;
 end Black.Request;
