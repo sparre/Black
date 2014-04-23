@@ -12,6 +12,8 @@ package Black.Response is
    type Instance (<>) is tagged private;
    subtype Class is Instance'Class;
 
+   function Create (Status : HTTP.Statuses) return Instance;
+
    function Switch_To_Websocket (Key : in String) return Class;
 
    function OK (Content_Type : in String;

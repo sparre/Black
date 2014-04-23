@@ -41,6 +41,65 @@ package body Black.Response is
       return Ada.Strings.Unbounded.To_String (Response.Content_Type);
    end Content_Type;
 
+   function Create (Status : HTTP.Statuses) return Instance is
+   begin
+      case Status is
+         when HTTP.Switching_Protocols =>
+            return Instance'(Status           => HTTP.Switching_Protocols,
+                             Content_Type     => <>,
+                             Content          => <>,
+                             Access_Control   => <>,
+                             Websocket_Accept => <>);
+         when HTTP.OK =>
+            return Instance'(Status         => HTTP.OK,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.No_Content =>
+            return Instance'(Status         => HTTP.No_Content,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Moved_Permanently =>
+            return Instance'(Status         => HTTP.Moved_Permanently,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>,
+                             Location       => <>);
+         when HTTP.Moved_Temporarily =>
+            return Instance'(Status         => HTTP.Moved_Temporarily,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>,
+                             Location       => <>);
+         when HTTP.Bad_Request =>
+            return Instance'(Status         => HTTP.Bad_Request,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Unauthorized =>
+            return Instance'(Status         => HTTP.Unauthorized,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Forbidden =>
+            return Instance'(Status         => HTTP.Forbidden,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Not_Found =>
+            return Instance'(Status         => HTTP.Not_Found,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+         when HTTP.Server_Error =>
+            return Instance'(Status         => HTTP.Server_Error,
+                             Content_Type   => <>,
+                             Content        => <>,
+                             Access_Control => <>);
+      end case;
+   end Create;
+
    function Forbidden (Content_Type : in String := MIME_Types.Text.Plain;
                        Data         : in String) return Class is
       use Ada.Strings.Unbounded;
