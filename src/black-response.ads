@@ -18,10 +18,10 @@ package Black.Response is
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
-               return Class;
+               return Instance;
    function OK (Content_Type : in String := MIME_Types.Text.Plain;
                 Data         : in String)
-               return Class;
+               return Instance;
 
    function No_Content return Class;
 

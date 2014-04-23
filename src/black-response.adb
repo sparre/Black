@@ -205,7 +205,7 @@ package body Black.Response is
 
    function OK (Content_Type : in String;
                 Data         : in Ada.Streams.Stream_Element_Array)
-               return Class is
+               return Instance is
       use Ada.Strings.Unbounded;
       pragma Assert (Ada.Streams.Stream_Element'Size = Character'Size);
       Buffer : String (1 .. Data'Length);
@@ -218,7 +218,7 @@ package body Black.Response is
    end OK;
 
    function OK (Content_Type : in String := MIME_Types.Text.Plain;
-                Data         : in String) return Class is
+                Data         : in String) return Instance is
       use Ada.Strings.Unbounded;
    begin
       return Instance'(Status         => HTTP.OK,
