@@ -303,7 +303,8 @@ package body Black.Request is
          begin
             if Slice (Line, Second_Space + 1, Length (Line)) /= "HTTP/1.1" then
                raise Protocol_Error
-                 with "HTTP 1.1 is the only supported protocol version.";
+                 with "HTTP 1.1 is the only supported protocol version.  (" &
+                      To_String (Line) & ")";
             end if;
          end Parse_Protocol_Version;
 
