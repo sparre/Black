@@ -244,12 +244,12 @@ package body Black.Request is
                                 Item   => Line);
             R.Parse (Line);
          end loop;
+
+         if R.Has_Content_Length and then R.Content_Length > 0 then
+            raise Program_Error
+              with "Parsing of request content not implemented yet.";
+         end if;
       end return;
-      
-      if R.Has_Content_Length and then R.Content_Length > 0 then
-	 raise Program_Error
-	   with "Parsing of request content not implemented yet.";
-      end if;
    end Parse_HTTP;
 
    procedure Parse_Method_And_Resource
