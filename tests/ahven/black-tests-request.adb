@@ -210,6 +210,11 @@ package body Black.Tests.Request is
                        Parameters_Passed  => Parameter.Vectors.Empty_Vector,
                        Want_Websocket     => True,
                        Websocket_Key      => "dGhlIHNhbXBsZSBub25jZQ==");
+   procedure Example_7 is
+      new Parser_Test (Source_File_Name   => "example_7.HTTP-request",
+                       Method_Used        => HTTP.Post,
+                       Resource_Requested => "/",
+                       Parameters_Passed  => Parameter.Vectors.Empty_Vector);
 
    pragma Style_Checks (Off);
    overriding
@@ -224,6 +229,7 @@ package body Black.Tests.Request is
       Add_Test_Routine (T, Example_4'Access,         "Request parser (example 4 - get)");
       Add_Test_Routine (T, Example_5'Access,         "Request parser (example 5 - get)");
       Add_Test_Routine (T, Example_6'Access,         "Request parser (example 6 - websocket)");
+      Add_Test_Routine (T, Example_7'Access,         "Request parser (example 7 - post)");
       Add_Test_Routine (T, Output_Input_Test'Access, "Output->input filter");
    end Initialize;
 end Black.Tests.Request;
