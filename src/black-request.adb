@@ -260,9 +260,8 @@ package body Black.Request is
               with "Parsing of request content without a content length not " &
                    "implemented.";
          elsif R.Method.Value = HTTP.Post then
-            raise Program_Error
-              with "Parsing of POST request content without a content " &
-                   "length not implemented.";
+            raise Protocol_Error
+              with "A POST request is required to have a content type.";
          end if;
       end return;
    end Parse_HTTP;
