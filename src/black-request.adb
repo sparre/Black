@@ -11,20 +11,19 @@ package body Black.Request is
                      Host     : in String;
                      Resource : in String) return Instance is
       use Ada.Strings.Unbounded;
+      use type Black.Optional_HTTP_Method.Instance;
+      use type Black.Optional_String.Instance;
    begin
-      return (Blank              => False,
-              Method             => Method,
-              Host               => To_Unbounded_String (Host),
-              Resource           => To_Unbounded_String (Resource),
-              Parameters         => <>,
-              Websocket          => False,
-              Has_Websocket_Key  => False,
-              Websocket_Key      => <>,
-              Origin             => <>,
-              Content            => <>,
-              Content_Type       => <>,
-              Has_Content_Length => False,
-              Content_Length     => <>);
+      return (Method         => +Method,
+              Host           => +To_Unbounded_String (Host),
+              Resource       => +To_Unbounded_String (Resource),
+              Parameters     => <>,
+              Websocket      => False,
+              Websocket_Key  => <>,
+              Origin         => <>,
+              Content        => <>,
+              Content_Type   => <>,
+              Content_Length => <>);
    end Compose;
 
    function Compose (Method       : in HTTP.Methods;
@@ -34,20 +33,20 @@ package body Black.Request is
                      Content_Type : in String := MIME_Types.Text.Plain)
                     return Instance is
       use Ada.Strings.Unbounded;
+      use type Black.Optional_HTTP_Method.Instance;
+      use type Black.Optional_Natural.Instance;
+      use type Black.Optional_String.Instance;
    begin
-      return (Blank              => False,
-              Method             => Method,
-              Host               => To_Unbounded_String (Host),
-              Resource           => To_Unbounded_String (Resource),
+      return (Method             => +Method,
+              Host               => +To_Unbounded_String (Host),
+              Resource           => +To_Unbounded_String (Resource),
               Parameters         => <>,
               Websocket          => False,
-              Has_Websocket_Key  => False,
               Websocket_Key      => <>,
               Origin             => <>,
-              Content            => To_Unbounded_String (Content),
-              Content_Type       => To_Unbounded_String (Content_Type),
-              Has_Content_Length => True,
-              Content_Length     => Content'Length);
+              Content            => +To_Unbounded_String (Content),
+              Content_Type       => +To_Unbounded_String (Content_Type),
+              Content_Length     => +Content'Length);
    end Compose;
 
    procedure Generate_HTTP
@@ -56,62 +55,66 @@ package body Black.Request is
       use Ada.Strings.Unbounded;
       use Text_IO;
    begin
-      if Item.Blank then
+      --  Excessive cyclomatic complexity:  Refactor!!!
+      if not Item.Method.Set then
          raise Constraint_Error
-           with "Request is not ready for transmission.";
-      elsif Length (Item.Host) = 0 then
+           with "Request does not have a HTTP method.";
+      elsif not Item.Host.Set then
          raise Constraint_Error
            with "Request does not contain a host name.";
-      elsif Item.Websocket and not Item.Has_Websocket_Key then
+      elsif Item.Websocket and not Item.Websocket_Key.Set then
          raise Constraint_Error
            with "Request is not ready for transmission: No websocket key.";
-      elsif Length (Item.Content) > 0 and Length (Item.Content_Type) = 0 then
+      elsif Item.Content.Set and not Item.Content_Type.Set then
          raise Constraint_Error
            with "Request is not ready for transmission: " &
                 "No MIME type declared for content.";
-      elsif Item.Has_Content_Length and then
-            Item.Content_Length /= Length (Item.Content) then
+      elsif Item.Content_Length.Set and then
+            Item.Content_Length.Value /= Length (Item.Content.Value) then
          raise Constraint_Error
            with "Request is not ready for transmission: " &
                 "Declared content length doesn't match actual content length.";
       else
-         Put      (Stream, HTTP.Methods'Image (Item.Method));
+         Put      (Stream, HTTP.Methods'Image (Item.Method.Value));
          Put      (Stream, " ");
-         Put      (Stream, Item.Resource);
+         Put      (Stream, Item.Resource.Value);
          Put      (Stream, " ");
          Put_Line (Stream, HTTP.Version);
 
          Put      (Stream, "Host: ");
-         Put_Line (Stream, Item.Host);
+         Put_Line (Stream, Item.Host.Value);
 
          if Item.Websocket then
             Put_Line (Stream, "Upgrade: websocket");
             Put_Line (Stream, "Connection: Upgrade");
 
             Put      (Stream, "Sec-Websocket-Key: ");
-            Put_Line (Stream, Item.Websocket_Key);
+            Put_Line (Stream, Item.Websocket_Key.Value);
          end if;
 
          if Item.Has_Origin then
             Put      (Stream, "Origin: ");
-            Put_Line (Stream, Item.Origin);
+            Put_Line (Stream, Item.Origin.Value);
          end if;
 
-         if Length (Item.Content) > 0 then
+         if Item.Content.Set then
             Put      (Stream, "Content-Type: ");
-            Put_Line (Stream, Item.Content_Type);
+            Put_Line (Stream, Item.Content_Type.Value);
             Put      (Stream, "Content-Length: ");
-            Put_Line (Stream, Length (Item.Content));
+            Put_Line (Stream, Length (Item.Content.Value));
          end if;
 
          New_Line (Stream);
-         Put      (Stream, Item.Content);
+
+         if Item.Content.Set then
+            Put      (Stream, Item.Content.Value);
+         end if;
       end if;
    end Generate_HTTP;
 
    function Has_Origin (Request : in Instance) return Boolean is
    begin
-      return Ada.Strings.Unbounded.Length (Request.Origin) > 0;
+      return Request.Origin.Set;
    end Has_Origin;
 
    function Has_Parameter (Request : in Instance;
@@ -132,30 +135,26 @@ package body Black.Request is
    function Host (Request : in Instance) return String is
       use Ada.Strings.Unbounded;
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      elsif Request.Host = Null_Unbounded_String then
-         raise Protocol_Error with "No host name was provided.";
+      if Request.Host.Set then
+         return To_String (Request.Host.Value);
       else
-         return To_String (Request.Host);
+         raise Protocol_Error with "No host name was provided.";
       end if;
    end Host;
 
    function Method (Request : in Instance) return HTTP.Methods is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
+      if Request.Method.Set then
+         return Request.Method.Value;
       else
-         return Request.Method;
+         raise Constraint_Error with "Request is blank.";
       end if;
    end Method;
 
    function Origin (Request : in Instance) return String is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      elsif Has_Origin (Request) then
-         return Ada.Strings.Unbounded.To_String (Request.Origin);
+      if Request.Origin.Set then
+         return Ada.Strings.Unbounded.To_String (Request.Origin.Value);
       else
          raise Constraint_Error with "Request has no origin.";
       end if;
@@ -199,31 +198,27 @@ package body Black.Request is
    function Parameters (Request : in Instance)
                        return Black.Parameter.Vectors.Vector is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      else
-         return Request.Parameters;
-      end if;
+      return Request.Parameters;
    end Parameters;
 
    procedure Parse (Request : in out Instance;
                     Line    : in     Black.Parsing.Header_Line) is
       use type HTTP.Header_Key;
+      use type Optional_Natural.Instance;
+      use type Optional_String.Instance;
    begin
       if Line.Key = "Host" then
-         Request.Host := Line.Value;
+         Request.Host := +Line.Value;
       elsif Line.Key = "Upgrade" and Line.Value = "websocket" then
          Request.Websocket := True;
       elsif Line.Key = "Sec-Websocket-Key" then
-         Request.Websocket_Key     := Line.Value;
-         Request.Has_Websocket_Key := True;
+         Request.Websocket_Key := +Line.Value;
       elsif Line.Key = "Origin" then
-         Request.Origin := Line.Value;
+         Request.Origin := +Line.Value;
       elsif Line.Key = "Content-Type" then
-         Request.Content_Type := Line.Value;
+         Request.Content_Type := +Line.Value;
       elsif Line.Key = "Content-Length" then
-         Request.Content_Length     := Line.Value;
-         Request.Has_Content_Length := True;
+         Request.Content_Length := +Line.Value;
       end if;
    end Parse;
 
@@ -231,6 +226,7 @@ package body Black.Request is
      (Stream : not null access Ada.Streams.Root_Stream_Type'Class)
      return Instance is
       use Ada.Strings.Unbounded;
+      use type Black.HTTP.Methods;
       Header : Black.Parsing.Header;
       Line   : Black.Parsing.Header_Line;
    begin
@@ -245,9 +241,28 @@ package body Black.Request is
             R.Parse (Line);
          end loop;
 
-         if R.Has_Content_Length and then R.Content_Length > 0 then
+         if R.Content_Length.Set and then R.Content_Length.Value > 0 then
+            declare
+               use type Optional_String.Instance;
+               Buffer : String (1 .. R.Content_Length.Value);
+            begin
+               String'Read (Stream,
+                            Buffer);
+               R.Content := +To_Unbounded_String (Buffer);
+            end;
+
+            if not R.Content_Type.Set then
+               raise Protocol_Error
+                 with "No content type provided with content.";
+            end if;
+         elsif R.Content_Type.Set then
             raise Program_Error
-              with "Parsing of request content not implemented yet.";
+              with "Parsing of request content without a content length not " &
+                   "implemented.";
+         elsif R.Method.Value = HTTP.Post then
+            raise Program_Error
+              with "Parsing of POST request content without a content " &
+                   "length not implemented.";
          end if;
       end return;
    end Parse_HTTP;
@@ -311,9 +326,10 @@ package body Black.Request is
       else
          Parse_Method :
          declare
+            use type Optional_HTTP_Method.Instance;
             Method : constant String := (Slice (Line, 1, First_Space - 1));
          begin
-            Request.Method := HTTP.Methods'Value (Method);
+            Request.Method := +HTTP.Methods'Value (Method);
          exception
             when Constraint_Error =>
                raise Protocol_Error
@@ -324,27 +340,28 @@ package body Black.Request is
          begin
             if Second_Space - First_Space > 1 then
                declare
+                  use type Optional_String.Instance;
                   Parameter_Marker : constant Natural :=
                     Index (Line, "?", First_Space + 1);
                begin
                   if Parameter_Marker in 1 .. Second_Space - 1 then
                      Request.Resource :=
-                       To_Unbounded_String
-                         (URL_Utilities.Decode
-                            (Slice (Source => Line,
-                                    Low    => First_Space + 1,
-                                    High   => Parameter_Marker - 1)));
+                       +To_Unbounded_String
+                          (URL_Utilities.Decode
+                             (Slice (Source => Line,
+                                     Low    => First_Space + 1,
+                                     High   => Parameter_Marker - 1)));
                      Request.Parameters :=
                        Parse_Parameters (Slice (Source => Line,
                                                 Low    => Parameter_Marker + 1,
                                                 High   => Second_Space - 1));
                   else
                      Request.Resource :=
-                       To_Unbounded_String
-                         (URL_Utilities.Decode
-                            (Slice (Source => Line,
-                                    Low    => First_Space + 1,
-                                    High   => Second_Space - 1)));
+                       +To_Unbounded_String
+                          (URL_Utilities.Decode
+                             (Slice (Source => Line,
+                                     Low    => First_Space + 1,
+                                     High   => Second_Space - 1)));
                   end if;
                end;
             else
@@ -361,57 +378,48 @@ package body Black.Request is
                       To_String (Line) & ")";
             end if;
          end Parse_Protocol_Version;
-
-         Request.Blank := False;
       end if;
    end Parse_Method_And_Resource;
 
    function Resource (Request : in Instance) return String is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
+      if Request.Resource.Set then
+         return Ada.Strings.Unbounded.To_String (Request.Resource.Value);
       else
-         return Ada.Strings.Unbounded.To_String (Request.Resource);
+         raise Constraint_Error with "Request has no resource.";
       end if;
    end Resource;
 
    function Want_Websocket (Request : in Instance) return Boolean is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      else
-         return Request.Websocket;
-      end if;
+      return Request.Websocket;
    end Want_Websocket;
 
    function Websocket (Host     : in String;
                        Resource : in String;
                        Key      : in String) return Instance is
       use Ada.Strings.Unbounded;
+      use type Black.Optional_HTTP_Method.Instance;
+      use type Black.Optional_String.Instance;
    begin
-      return (Blank              => False,
-              Host               => To_Unbounded_String (Host),
-              Resource           => To_Unbounded_String (Resource),
-              Method             => HTTP.Get,
-              Parameters         => <>,
-              Websocket          => True,
-              Has_Websocket_Key  => True,
-              Websocket_Key      => To_Unbounded_String (Key),
-              Origin             => <>,
-              Content            => <>,
-              Content_Type       => <>,
-              Has_Content_Length => False,
-              Content_Length     => <>);
+      return (Method         => +HTTP.Get,
+              Host           => +To_Unbounded_String (Host),
+              Resource       => +To_Unbounded_String (Resource),
+              Parameters     => <>,
+              Websocket      => True,
+              Websocket_Key  => +To_Unbounded_String (Key),
+              Origin         => <>,
+              Content        => <>,
+              Content_Type   => <>,
+              Content_Length => <>);
    end Websocket;
 
    function Websocket_Key  (Request : in Instance) return String is
    begin
-      if Request.Blank then
-         raise Constraint_Error with "Request is blank.";
-      elsif not Request.Websocket then
+      if not Request.Websocket then
          raise Constraint_Error with "Not a websocket request.";
-      elsif Request.Has_Websocket_Key then
-         return Ada.Strings.Unbounded.To_String (Request.Websocket_Key);
+      elsif Request.Websocket_Key.Set then
+         return Ada.Strings.Unbounded.To_String (Request.Websocket_Key.Value);
       else
          raise Protocol_Error with "Request has no websocket key.";
       end if;
