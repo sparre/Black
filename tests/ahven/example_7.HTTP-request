@@ -1,0 +1,9 @@
+POST / HTTP/1.1
+User-Agent: curl/7.26.0
+Host: localhost:7777
+Accept: */*
+Content-Length: 17
+Content-Type: application/json
+
+{"event": "call"}
+

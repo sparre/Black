@@ -11,6 +11,9 @@ with
   Ada.Strings.Unbounded;
 private
 with
+  Black.Optional_HTTP_Method,
+  Black.Optional_Natural,
+  Black.Optional_String,
   Black.Parsing;
 
 package Black.Request is
@@ -67,18 +70,15 @@ private
 
    type Instance is tagged
       record
-         Blank              : Boolean := True;
-         Host               : Ada.Strings.Unbounded.Unbounded_String;
-         Resource           : Ada.Strings.Unbounded.Unbounded_String;
-         Method             : Black.HTTP.Methods;
-         Parameters         : Black.Parameter.Vectors.Vector;
-         Websocket          : Boolean := False;
-         Has_Websocket_Key  : Boolean := False;
-         Websocket_Key      : Ada.Strings.Unbounded.Unbounded_String;
-         Origin             : Ada.Strings.Unbounded.Unbounded_String;
-         Content            : Ada.Strings.Unbounded.Unbounded_String;
-         Content_Type       : Ada.Strings.Unbounded.Unbounded_String;
-         Has_Content_Length : Boolean := False;
-         Content_Length     : Natural;
+         Method         : Optional_HTTP_Method.Instance;
+         Host           : Optional_String.Instance;
+         Resource       : Optional_String.Instance;
+         Parameters     : Black.Parameter.Vectors.Vector;
+         Websocket      : Boolean := False;
+         Websocket_Key  : Optional_String.Instance;
+         Origin         : Optional_String.Instance;
+         Content        : Optional_String.Instance;
+         Content_Type   : Optional_String.Instance;
+         Content_Length : Optional_Natural.Instance;
       end record;
 end Black.Request;

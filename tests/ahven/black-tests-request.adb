@@ -2,7 +2,9 @@ with
   Ada.Containers,
   Ada.Exceptions,
   Ada.Streams.Stream_IO,
-  Ada.Strings.Unbounded;
+  Ada.Strings.Unbounded,
+  Ada.Text_IO,
+  Ada.Text_IO.Text_Streams;
 with
   Black.HTTP,
   Black.Parameter.Vectors,
@@ -72,7 +74,8 @@ package body Black.Tests.Request is
                                         Resource => "/events/3"),
             5 => Black.Request.Compose (Method   => HTTP.Post,
                                         Host     => "ada-dk.org",
-                                        Resource => "/events/2"),
+                                        Resource => "/events/2",
+                                        Content  => "Hello guys!"),
             6 => Black.Request.Compose (Method   => HTTP.Options,
                                         Host     => "ada-dk.org",
                                         Resource => "/events"),
@@ -87,9 +90,18 @@ package body Black.Tests.Request is
                                         Examples (Index));
          Got := Black.Request.Instance'Input (Buffer'Access);
 
+         declare
+            use Ada.Text_IO, Ada.Text_IO.Text_Streams;
+         begin
+            Put_Line ("Example" & Positive'Image (Index) & ":");
+            Black.Request.Instance'Output (Stream (Standard_Output),
+                                           Got);
+         end;
+
          Ahven.Assert
            (Condition => Examples (Index) = Got,
-            Message   => "Mismatch in example" & Positive'Image (Index) & ".");
+            Message   => "Mismatch in example" & Positive'Image (Index) &
+                         ".  (Skipping remaining examples.)");
       end loop;
    end Output_Input_Test;
 
@@ -210,6 +222,11 @@ package body Black.Tests.Request is
                        Parameters_Passed  => Parameter.Vectors.Empty_Vector,
                        Want_Websocket     => True,
                        Websocket_Key      => "dGhlIHNhbXBsZSBub25jZQ==");
+   procedure Example_7 is
+      new Parser_Test (Source_File_Name   => "example_7.HTTP-request",
+                       Method_Used        => HTTP.Post,
+                       Resource_Requested => "/",
+                       Parameters_Passed  => Parameter.Vectors.Empty_Vector);
 
    pragma Style_Checks (Off);
    overriding
@@ -224,6 +241,7 @@ package body Black.Tests.Request is
       Add_Test_Routine (T, Example_4'Access,         "Request parser (example 4 - get)");
       Add_Test_Routine (T, Example_5'Access,         "Request parser (example 5 - get)");
       Add_Test_Routine (T, Example_6'Access,         "Request parser (example 6 - websocket)");
+      Add_Test_Routine (T, Example_7'Access,         "Request parser (example 7 - post)");
       Add_Test_Routine (T, Output_Input_Test'Access, "Output->input filter");
    end Initialize;
 end Black.Tests.Request;
