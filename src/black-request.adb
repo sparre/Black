@@ -84,6 +84,8 @@ package body Black.Request is
          Put      (Stream, "Host: ");
          Put_Line (Stream, Item.Host.Value);
 
+         Put_Line (Stream, "Accept-Encoding: identity");
+
          if Item.Websocket then
             Put_Line (Stream, "Upgrade: websocket");
             Put_Line (Stream, "Connection: Upgrade");
