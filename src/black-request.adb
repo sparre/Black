@@ -7,6 +7,55 @@ with
 
 package body Black.Request is
 
+   procedure Check (Item : in     Instance);
+   procedure Check (Content        : in     Optional_String.Instance;
+                    Content_Type   : in     Optional_String.Instance;
+                    Content_Length : in     Optional_Natural.Instance);
+
+   ----------------------------------------------------------------------------
+
+   procedure Check (Content        : in     Optional_String.Instance;
+                    Content_Type   : in     Optional_String.Instance;
+                    Content_Length : in     Optional_Natural.Instance) is
+      use Ada.Strings.Unbounded;
+   begin
+      if Content.Set and not Content_Type.Set then
+         raise Constraint_Error
+           with "Request is not ready for transmission: " &
+                "No MIME type declared for content.";
+      elsif Content.Set and Content_Length.Set then
+         if Content_Length.Value /= Length (Content.Value) then
+            raise Constraint_Error
+              with "Request is not ready for transmission: " &
+                   "Declared content length does not match actual content " &
+                   "length.";
+         end if;
+      elsif Content_Length.Set and then Content_Length.Value > 0 then
+         pragma Assert (not Content.Set);
+         raise Constraint_Error
+           with "Request is not ready for transmission: " &
+                "Positive content length, but no content provided.";
+      end if;
+   end Check;
+
+   procedure Check (Item : in     Instance) is
+   begin
+      if not Item.Method.Set then
+         raise Constraint_Error
+           with "Request does not have a HTTP method.";
+      elsif not Item.Host.Set then
+         raise Constraint_Error
+           with "Request does not contain a host name.";
+      elsif Item.Websocket and not Item.Websocket_Key.Set then
+         raise Constraint_Error
+           with "Request is not ready for transmission: No websocket key.";
+      end if;
+
+      Check (Content        => Item.Content,
+             Content_Type   => Item.Content_Type,
+             Content_Length => Item.Content_Length);
+   end Check;
+
    function Compose (Method   : in HTTP.Methods;
                      Host     : in String;
                      Resource : in String) return Instance is
@@ -55,66 +104,43 @@ package body Black.Request is
       use Ada.Strings.Unbounded;
       use Text_IO;
    begin
-      --  Excessive cyclomatic complexity:  Refactor!!!
-      if not Item.Method.Set then
-         raise Constraint_Error
-           with "Request does not have a HTTP method.";
-      elsif not Item.Host.Set then
-         raise Constraint_Error
-           with "Request does not contain a host name.";
-      elsif Item.Websocket and not Item.Websocket_Key.Set then
-         raise Constraint_Error
-           with "Request is not ready for transmission: No websocket key.";
-      elsif Item.Content.Set and not Item.Content_Type.Set then
-         raise Constraint_Error
-           with "Request is not ready for transmission: " &
-                "No MIME type declared for content.";
-      elsif Item.Content_Length.Set  and not Item.Content.Set then
-         raise Constraint_Error
-           with "Request is not ready for transmission: " &
-                "Content length declared, but no content provided.";
-      elsif Item.Content_Length.Set and then
-            Item.Content_Length.Value /= Length (Item.Content.Value) then
-         raise Constraint_Error
-           with "Request is not ready for transmission: " &
-                "Declared content length doesn't match actual content length.";
-      else
-         Put      (Stream, HTTP.Methods'Image (Item.Method.Value));
-         Put      (Stream, " ");
-         Put      (Stream, Item.Resource.Value);
-         Put      (Stream, " ");
-         Put_Line (Stream, HTTP.Version);
+      Check (Item);
 
-         Put      (Stream, "Host: ");
-         Put_Line (Stream, Item.Host.Value);
+      Put      (Stream, HTTP.Methods'Image (Item.Method.Value));
+      Put      (Stream, " ");
+      Put      (Stream, Item.Resource.Value);
+      Put      (Stream, " ");
+      Put_Line (Stream, HTTP.Version);
 
-         Put_Line (Stream, "Accept-Encoding: identity");
+      Put      (Stream, "Host: ");
+      Put_Line (Stream, Item.Host.Value);
 
-         if Item.Websocket then
-            Put_Line (Stream, "Upgrade: websocket");
-            Put_Line (Stream, "Connection: Upgrade");
+      Put_Line (Stream, "Accept-Encoding: identity");
 
-            Put      (Stream, "Sec-Websocket-Key: ");
-            Put_Line (Stream, Item.Websocket_Key.Value);
-         end if;
+      if Item.Websocket then
+         Put_Line (Stream, "Upgrade: websocket");
+         Put_Line (Stream, "Connection: Upgrade");
 
-         if Item.Has_Origin then
-            Put      (Stream, "Origin: ");
-            Put_Line (Stream, Item.Origin.Value);
-         end if;
+         Put      (Stream, "Sec-Websocket-Key: ");
+         Put_Line (Stream, Item.Websocket_Key.Value);
+      end if;
 
-         if Item.Content.Set then
-            Put      (Stream, "Content-Type: ");
-            Put_Line (Stream, Item.Content_Type.Value);
-            Put      (Stream, "Content-Length: ");
-            Put_Line (Stream, Length (Item.Content.Value));
-         end if;
+      if Item.Has_Origin then
+         Put      (Stream, "Origin: ");
+         Put_Line (Stream, Item.Origin.Value);
+      end if;
 
-         New_Line (Stream);
+      if Item.Content.Set then
+         Put      (Stream, "Content-Type: ");
+         Put_Line (Stream, Item.Content_Type.Value);
+         Put      (Stream, "Content-Length: ");
+         Put_Line (Stream, Length (Item.Content.Value));
+      end if;
 
-         if Item.Content.Set then
-            Put      (Stream, Item.Content.Value);
-         end if;
+      New_Line (Stream);
+
+      if Item.Content.Set then
+         Put      (Stream, Item.Content.Value);
       end if;
    end Generate_HTTP;
 
