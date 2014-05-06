@@ -69,6 +69,10 @@ package body Black.Request is
          raise Constraint_Error
            with "Request is not ready for transmission: " &
                 "No MIME type declared for content.";
+      elsif Item.Content_Length.Set  and not Item.Content.Set then
+         raise Constraint_Error
+           with "Request is not ready for transmission: " &
+                "Content length declared, but no content provided.";
       elsif Item.Content_Length.Set and then
             Item.Content_Length.Value /= Length (Item.Content.Value) then
          raise Constraint_Error
