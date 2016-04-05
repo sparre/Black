@@ -13,6 +13,8 @@ ahven-update: ahven
 	cd ahven && hg pull && hg update && hg revert --all
 	perl -i~ -lpe 's|external [(]"OS_VERSION", "[^"]"[)];|external ("OS_VERSION");|' ahven/gnat/ahven*.gpr
 
+DEPENDENCY_UPDATES += ahven-update
+
 libesl:
 	if [ ! -d libesl ]; then ( rm -f libesl && git clone https://github.com/AdaHeads/libesl libesl ); fi
 	rm -f libesl/src/esl*.ad[sb]
@@ -21,5 +23,9 @@ libesl-update: libesl
 	cd libesl && git pull
 	rm -f libesl/src/esl*.ad[sb]
 
-.PHONY: ahven-update libesl-update
+DEPENDENCY_UPDATES += libesl-update
+
+update: $(DEPENDENCY_UPDATES)
+
+.PHONY: $(DEPENDENCY_UPDATES) update
 
