@@ -1,6 +1,7 @@
 -- Black HTTP and Websocket library - License
 --
 -- Copyright (c) 2014, AdaHeads K/S
+-- Copyright (c) 2016, JSA Research & Innovation
 --
 -- Permission to use, copy, modify, and distribute this software for any
 -- purpose with or without fee is hereby granted, provided that the above
