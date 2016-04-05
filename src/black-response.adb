@@ -245,12 +245,14 @@ package body Black.Response is
            with "Response object is not ready to be streamed.  " &
                 "No content-type provided for content.";
       elsif Item.Status = HTTP.Moved_Permanently and then
-              Length (Item.Location) = 0 then
+              Length (Item.Location) = 0
+      then
          raise Constraint_Error
            with "Response object is not ready to be streamed.  " &
                 "No location provided for redirection.";
       elsif Item.Status = HTTP.Moved_Temporarily and then
-              Length (Item.Location) = 0 then
+              Length (Item.Location) = 0
+      then
          raise Constraint_Error
            with "Response object is not ready to be streamed.  " &
                 "No location provided for redirection.";
