@@ -3,7 +3,7 @@ package Black.HTTP is
 
    Version : constant String;
 
-   type Methods is (Put, Get, Delete, Post, Options);
+   type Methods is (Options, Get, Head, Post, Put, Delete, Trace, Connect);
 
    type Statuses is (Switching_Protocols,
                      OK,
