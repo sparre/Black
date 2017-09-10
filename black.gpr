@@ -1,6 +1,4 @@
---  O mighty Emacs, please use -*- Ada -*- mode in this lowly file.
-
-with "ada_2005";
+with "ada_2012";
 
 project Black is
    for Source_Dirs use ("src/",
@@ -10,8 +8,8 @@ project Black is
 		 "black-response",
 		 "black-streams-memory");
 
-   package Builder  renames Ada_2005.Builder;
-   package Compiler renames Ada_2005.Compiler;
+   package Builder  renames Ada_2012.Builder;
+   package Compiler renames Ada_2012.Compiler;
 
    for Object_Dir use "obj/";
    for Exec_Dir   use "bin/";

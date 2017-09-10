@@ -3,8 +3,6 @@ Black [1]
 
 A simple HTTP and Websocket library written in Ada with minimal external dependencies.
 
-We constrain ourselves to use only Ada 2005 (as Debian/stable doesn't have a good Ada 2012 compiler yet).
-
 You can find examples (well, right now only one) for Black in the examples repository [4].
 
 
@@ -21,8 +19,6 @@ Dependencies
   + for URL encoding and decoding.
 - Bash
   + for managing test cases.
-- Zsh
-  + used to implement some tests.
 
 
 Requirements
@@ -34,11 +30,9 @@ Requirements for the library are kept as [issues](https://github.com/sparre/Blac
 Included tests
 --------------
 
-1. 'cyclomatic_complexity' - reports excessive cyclomatic complexities in the
-   project sources.
-2. 'unused_units' - warns about units which aren't compiled.
-3. 'ahven' - unit tests.
-4. 'task_interfaces_and_extended_return' - testing for a bug in GNAT.
+1. 'unused_units' - warns about units which aren't compiled.
+2. 'ahven' - unit tests.
+3. 'task_interfaces_and_extended_return' - testing for a bug in GNAT.
 
 
 Links
