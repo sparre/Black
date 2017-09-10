@@ -1,7 +1,7 @@
 --  O mighty Emacs, please use -*- Ada -*- mode in this lowly file.
 
 with "../../ada_2005";
-with "../../ahven/gnat/ahven_lib";
+with "../../ahven/gnat/ahven";
 
 project Test is
    for Source_Dirs use (".",
