@@ -3,12 +3,12 @@ include Makefile.project
 
 EXECUTABLES=$(GENERATED_EXECUTABLES) $(SCRIPTS)
 
-all: build metrics
+all: build
 
 build: fix-whitespace $(GENERATED_SOURCES)
 	gnatmake -p -P $(PROJECT)
 
-test: build metrics
+test: build
 	@./tests/build
 	@./tests/run
 
@@ -24,17 +24,13 @@ clean:
 
 distclean: clean
 	rm -f $(GENERATED_EXECUTABLES)
-	rm -f obj/*.ad[sb].metrix
 	rmdir bin || true
 	rmdir obj || true
 
 fix-whitespace:
 	@find src tests -name '*.ad?' | xargs --no-run-if-empty egrep -l '	| $$' | grep -v '^b[~]' | xargs --no-run-if-empty perl -i -lpe 's|	|        |g; s| +$$||g'
 
-metrics:
-	@gnat metric -P $(PROJECT)
-
 -include Makefile.project_rules
 
-.PHONY: all build test install clean distclean fix-whitespace metrics
+.PHONY: all build test install clean distclean fix-whitespace
 
