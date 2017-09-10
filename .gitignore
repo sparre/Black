@@ -30,10 +30,11 @@
 /libesl/
 
 # Generated object files:
-/obj/*.ali
-/obj/*.o
+/obj/
+/tests/*/b__*.ad[sb]
 /tests/*/*.ali
 /tests/*/*.o
+/tests/*/*.bexch
 
 # Configuration file:
 .config

@@ -1,4 +1,4 @@
-#! /bin/zsh
+#! /bin/bash
 #-----------------------------------------------------------------------------
 #--  Set current working directory:
 
@@ -18,7 +18,7 @@ source_units=$(mktemp)
 #-----------------------------------------------------------------------------
 #--  List generated files:
 
-\ls ../../obj/*.{ali,o} \
+find ../../obj -name '*.ali' -o -name '*.o' \
   | perl -lpe 's!^.+/([^/]+)[.](ali|o)$!$1!;' \
   | LANG=C sort -u \
   > ${generated_units}
@@ -26,7 +26,7 @@ source_units=$(mktemp)
 #-----------------------------------------------------------------------------
 #--  List source files:
 
-\ls ../../src/**/*.ad[sb] \
+find ../../obj -name '*.ad[sb]' \
   | perl -lpe 's!^.+/([^/]+)[.](ads|adb)$!$1!;' \
   | LANG=C sort -u \
   > ${source_units}
